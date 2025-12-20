@@ -1,0 +1,240 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: PulseB2B - Multi-Region Job Scraper with Playwright
+
+# Global configuration
+Globals:
+  Function:
+    Timeout: 900 # 15 minutos (máximo para Lambda)
+    MemorySize: 3008 # 3GB para Playwright
+    Runtime: nodejs18.x
+    Environment:
+      Variables:
+        SUPABASE_URL: !Ref SupabaseUrl
+        SUPABASE_KEY: !Ref SupabaseKey
+        PROXY_MODE: !Ref ProxyMode
+        NODE_ENV: production
+
+# Parameters
+Parameters:
+  SupabaseUrl:
+    Type: String
+    Description: Supabase project URL
+    Default: https://your-project.supabase.co
+  
+  SupabaseKey:
+    Type: String
+    Description: Supabase service role key (secret)
+    NoEcho: true
+  
+  ProxyMode:
+    Type: String
+    Description: Proxy mode (free, smartproxy, brightdata, none)
+    Default: free
+    AllowedValues:
+      - free
+      - smartproxy
+      - brightdata
+      - none
+  
+  SlackWebhookUrl:
+    Type: String
+    Description: Slack webhook URL for notifications (optional)
+    Default: ""
+    NoEcho: true
+  
+  DiscordWebhookUrl:
+    Type: String
+    Description: Discord webhook URL for notifications (optional)
+    Default: ""
+    NoEcho: true
+
+# Resources
+Resources:
+  
+  # Lambda Layer para Playwright
+  PlaywrightLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: playwright-chromium
+      Description: Playwright with Chromium for scraping
+      ContentUri: ./layers/playwright/
+      CompatibleRuntimes:
+        - nodejs18.x
+      RetentionPolicy: Retain
+    Metadata:
+      BuildMethod: nodejs18.x
+
+  # Lambda Function - US East 1
+  ScraperFunctionUSEast1:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: pulseb2b-scraper-us-east-1
+      CodeUri: ./
+      Handler: lambda/scraper.handler
+      Layers:
+        - !Ref PlaywrightLayer
+      Environment:
+        Variables:
+          AWS_REGION_OVERRIDE: us-east-1
+          SLACK_WEBHOOK_URL: !Ref SlackWebhookUrl
+          DISCORD_WEBHOOK_URL: !Ref DiscordWebhookUrl
+      Events:
+        # Trigger programado cada 4 horas
+        ScheduledEvent:
+          Type: Schedule
+          Properties:
+            Schedule: rate(4 hours)
+            Enabled: true
+        # API Gateway para invocar manualmente
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /scrape/us-east-1
+            Method: post
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: '*'
+
+  # Lambda Function - EU West 1
+  ScraperFunctionEUWest1:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: pulseb2b-scraper-eu-west-1
+      CodeUri: ./
+      Handler: lambda/scraper.handler
+      Layers:
+        - !Ref PlaywrightLayer
+      Environment:
+        Variables:
+          AWS_REGION_OVERRIDE: eu-west-1
+          SLACK_WEBHOOK_URL: !Ref SlackWebhookUrl
+          DISCORD_WEBHOOK_URL: !Ref DiscordWebhookUrl
+      Events:
+        ScheduledEvent:
+          Type: Schedule
+          Properties:
+            Schedule: rate(4 hours)
+            Enabled: true
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /scrape/eu-west-1
+            Method: post
+      Policies:
+        - AWSLambdaBasicExecutionRole
+
+  # Lambda Function - South America East 1
+  ScraperFunctionSAEast1:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: pulseb2b-scraper-sa-east-1
+      CodeUri: ./
+      Handler: lambda/scraper.handler
+      Layers:
+        - !Ref PlaywrightLayer
+      Environment:
+        Variables:
+          AWS_REGION_OVERRIDE: sa-east-1
+          SLACK_WEBHOOK_URL: !Ref SlackWebhookUrl
+          DISCORD_WEBHOOK_URL: !Ref DiscordWebhookUrl
+      Events:
+        ScheduledEvent:
+          Type: Schedule
+          Properties:
+            Schedule: rate(4 hours)
+            Enabled: true
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /scrape/sa-east-1
+            Method: post
+      Policies:
+        - AWSLambdaBasicExecutionRole
+
+  # Lambda Function - Orchestrator
+  OrchestratorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: pulseb2b-orchestrator
+      CodeUri: ./
+      Handler: lambda/orchestrator.handler
+      Timeout: 60
+      MemorySize: 512
+      Environment:
+        Variables:
+          SCRAPER_FUNCTIONS: !Sub '["${ScraperFunctionUSEast1}","${ScraperFunctionEUWest1}","${ScraperFunctionSAEast1}"]'
+      Events:
+        # Ejecutar cada 6 horas para distribuir carga
+        ScheduledEvent:
+          Type: Schedule
+          Properties:
+            Schedule: rate(6 hours)
+            Enabled: true
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /orchestrate
+            Method: post
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - lambda:InvokeFunction
+              Resource: '*'
+
+  # CloudWatch Log Groups
+  ScraperLogGroupUSEast1:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ScraperFunctionUSEast1}'
+      RetentionInDays: 7
+
+  ScraperLogGroupEUWest1:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ScraperFunctionEUWest1}'
+      RetentionInDays: 7
+
+  ScraperLogGroupSAEast1:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ScraperFunctionSAEast1}'
+      RetentionInDays: 7
+
+  OrchestratorLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${OrchestratorFunction}'
+      RetentionInDays: 7
+
+# Outputs
+Outputs:
+  ApiGatewayUrl:
+    Description: API Gateway endpoint URL
+    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/'
+  
+  ScraperFunctionUSEast1Arn:
+    Description: Scraper function ARN for US East 1
+    Value: !GetAtt ScraperFunctionUSEast1.Arn
+  
+  ScraperFunctionEUWest1Arn:
+    Description: Scraper function ARN for EU West 1
+    Value: !GetAtt ScraperFunctionEUWest1.Arn
+  
+  ScraperFunctionSAEast1Arn:
+    Description: Scraper function ARN for SA East 1
+    Value: !GetAtt ScraperFunctionSAEast1.Arn
+  
+  OrchestratorFunctionArn:
+    Description: Orchestrator function ARN
+    Value: !GetAtt OrchestratorFunction.Arn

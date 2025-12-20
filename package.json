@@ -1,0 +1,45 @@
+{
+  "name": "pulseb2b-serverless",
+  "version": "1.0.0",
+  "description": "PulseB2B - Serverless job scraping with multi-region support",
+  "main": "lambda/scraper.js",
+  "scripts": {
+    "test": "jest",
+    "test:scraper": "node scrapers/jobScraper.js",
+    "test:lambda": "node -e \"require('./lambda/scraper').handler({}, {})\"",
+    "deploy": "sam deploy",
+    "build": "sam build",
+    "local": "sam local start-api"
+  },
+  "keywords": [
+    "job-scraping",
+    "playwright",
+    "aws-lambda",
+    "supabase",
+    "webhooks",
+    "market-intelligence"
+  ],
+  "author": "PulseB2B Team",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.3",
+    "axios": "^1.6.5",
+    "playwright-extra": "^4.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "playwright": "^1.40.1",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "jest": "^29.7.0",
+    "aws-sdk": "^2.1523.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "playwright": {
+    "browsers": [
+      "chromium"
+    ]
+  }
+}

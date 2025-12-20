@@ -1,0 +1,36 @@
+# PulseB2B Dependencies
+
+# Web scraping y RSS
+pygooglenews==0.1.2
+feedparser==6.0.11
+newspaper4k==0.9.3
+requests==2.31.0
+beautifulsoup4==4.12.3
+lxml==5.1.0
+
+# NLP y Machine Learning
+transformers==4.36.2
+torch==2.1.2
+sentencepiece==0.1.99
+tokenizers==0.15.0
+
+# Data processing
+numpy==1.26.3
+pandas==2.1.4
+python-dateutil==2.8.2
+
+# Configuration
+PyYAML==6.0.1
+
+# Logging and utilities
+python-dotenv==1.0.0
+tqdm==4.66.1
+
+# Optional: Enhanced NER (Named Entity Recognition)
+# spacy==3.7.2
+# en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.0/en_core_web_sm-3.7.0-py3-none-any.whl
+
+# ML Prediction Engine
+xgboost>=2.0.3
+scikit-learn>=1.4.0
+shap>=0.44.0

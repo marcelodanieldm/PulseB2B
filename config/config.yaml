@@ -1,0 +1,76 @@
+# PulseB2B Configuration File
+
+monitoring:
+  # Términos de búsqueda para monitorear noticias
+  search_queries:
+    - "startup funding"
+    - "Series A"
+    - "Series B"
+    - "Series C"
+    - "venture capital"
+    - "layoffs tech"
+    - "company expansion"
+    - "tech acquisitions"
+    - "IPO tech"
+    - "merger acquisition"
+  
+  # Días hacia atrás para buscar noticias
+  days_lookback: 7
+  
+  # Extraer contenido completo de artículos (más lento pero más preciso)
+  extract_full_content: true
+
+analysis:
+  # Usar análisis de sentimiento con BERT (requiere más recursos)
+  use_sentiment_analysis: true
+  
+  # Extraer nombres de empresas de artículos
+  extract_companies: true
+  
+  # Score mínimo de relevancia para incluir artículo
+  min_relevance_score: 1.0
+  
+  # Modelo BERT para análisis de sentimiento
+  # Opciones: 
+  #   - distilbert-base-uncased-finetuned-sst-2-english (ligero, recomendado)
+  #   - nlptown/bert-base-multilingual-uncased-sentiment (multilenguaje)
+  sentiment_model: "distilbert-base-uncased-finetuned-sst-2-english"
+
+paths:
+  # Directorio para datos
+  data_dir: "./data"
+  
+  # Directorio para salidas
+  output_dir: "./data/output"
+  
+  # Directorio para modelos
+  models_dir: "./models"
+
+# Configuración de fuentes RSS adicionales
+rss_feeds:
+  - name: "TechCrunch"
+    url: "https://techcrunch.com/feed/"
+  - name: "VentureBeat"
+    url: "https://venturebeat.com/feed/"
+  - name: "Crunchbase News"
+    url: "https://news.crunchbase.com/feed/"
+  - name: "The Information"
+    url: "https://www.theinformation.com/feed"
+
+# Parámetros de Financial Health Score
+financial_health:
+  weights:
+    funding_recency: 0.25
+    funding_amount: 0.20
+    team_efficiency: 0.20
+    growth_trajectory: 0.15
+    funding_velocity: 0.10
+    news_sentiment: 0.10
+  
+  benchmarks:
+    seed_amount: 2.0
+    series_a_amount: 10.0
+    series_b_amount: 25.0
+    series_c_amount: 50.0
+    funding_per_employee: 0.5
+    optimal_months_between_rounds: 18
