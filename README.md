@@ -2,11 +2,11 @@
 
 **Plataforma completa de inteligencia de mercados con arquitectura serverless multi-región.**
 
-Pipeline automatizado que monitorea noticias empresariales, detecta vacantes en tiempo real y calcula scores de salud financiera de startups.
+Pipeline automatizado que monitorea noticias empresariales, detecta vacantes en tiempo real, predice contrataciones IT y genera lead scoring para LATAM.
 
 ## 📋 Descripción
 
-PulseB2B es una solución completa para analistas de mercados que necesitan monitorear el ecosistema de startups y venture capital. El sistema integra tres componentes principales:
+PulseB2B es una solución completa para analistas de mercados que necesitan monitorear el ecosistema de startups y venture capital. El sistema integra cuatro componentes principales:
 
 ### 📰 **News Intelligence Pipeline (Python)**
 1. **Monitorea** múltiples fuentes de noticias (Google News, TechCrunch, VentureBeat, Crunchbase)
@@ -33,6 +33,13 @@ PulseB2B es una solución completa para analistas de mercados que necesitan moni
 3. **Explicabilidad SHAP** con justificación de 3 razones por empresa
 4. **Batch Processing** para análisis de múltiples empresas
 5. **JSON Output** con probabilidades y métricas detalladas
+
+### 🎯 **Lead Scoring System (LATAM)**
+1. **Web Scraping** de LinkedIn vía Google Search con BeautifulSoup
+2. **Hiring Potential Index (HPI)** - Score 0-100 de probabilidad de contratación
+3. **Lógica de Negocio**: Funding reciente + bajo crecimiento = ALTA urgencia
+4. **Focus Geográfico**: México y Brasil exclusivamente
+5. **Reportes Automáticos**: CSV con rankings y recomendaciones de acción
 
 ## 🎯 Características Principales
 
@@ -733,18 +740,22 @@ python main.py --no-sentiment
 - [ ] Named Entity Recognition mejorado con spaCy
 - [ ] Soporte para múltiples idiomas
 - [ ] API REST para predicciones ML
+- [ ] Integración con CRMs (Salesforce, HubSpot)
 
 ## 📚 Documentación
 
 - [📖 README Principal](README.md) - Overview y setup
 - [🏗️ ARCHITECTURE.md](docs/ARCHITECTURE.md) - Arquitectura del sistema
 - [🚀 DEPLOYMENT.md](docs/DEPLOYMENT.md) - Guía de deployment AWS
-- [🤖 ML_ENGINE.md](docs/ML_ENGINE.md) - **Motor de predicción ML**
+- [🤖 ML_ENGINE.md](docs/ML_ENGINE.md) - Motor de predicción ML con XGBoost
+- [🎯 LEAD_SCORING.md](docs/LEAD_SCORING.md) - **Sistema de Lead Scoring para LATAM**
+- [💻 Frontend README](frontend/README.md) - Dashboard Next.js con Mapbox
 
 ## 🎓 Casos de Uso
 
 - **Venture Capital:** Monitoreo de portafolio y pipeline de inversión
 - **Recruiting Tech:** Predicción de empresas que contratarán en 3 meses
+- **Lead Generation LATAM:** Identificación de empresas en México/Brasil con alta urgencia de hiring
 - **M&A:** Identificación de targets de adquisición
 - **Análisis Competitivo:** Tracking de competidores y mercado
 - **Business Development:** Detección de oportunidades de partnership
