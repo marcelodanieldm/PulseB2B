@@ -1,0 +1,135 @@
+name: Lead Scoring Automation (Ghost System)
+
+# Schedule: Every hour (GitHub Actions cron)
+# Uses GitHub Actions as free infrastructure for distributed scraping
+on:
+  schedule:
+    # Run every hour at minute 0
+    - cron: '0 * * * *'
+  
+  # Allow manual trigger for testing
+  workflow_dispatch:
+  
+  # Optionally trigger on push to main (for testing)
+  push:
+    branches:
+      - main
+    paths:
+      - 'scripts/lead_scoring.py'
+      - 'backend/src/**'
+      - '.github/workflows/lead-scraping.yml'
+
+jobs:
+  scrape-and-process-leads:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      # Don't cancel other jobs if one fails
+      fail-fast: false
+    
+    env:
+      # Supabase credentials (set in GitHub Secrets)
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      
+      # Webhook for critical lead notifications (Slack/Discord)
+      WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+      CRITICAL_THRESHOLD: ${{ secrets.CRITICAL_THRESHOLD || '80' }}
+      
+      # Optional: Enable real web scraping (default is mock data)
+      ENABLE_REAL_SCRAPING: ${{ secrets.ENABLE_REAL_SCRAPING || 'false' }}
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: 📦 Install Python Dependencies
+        run: |
+          pip install -r requirements-scraper.txt
+      
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      
+      - name: 📦 Install Node.js Dependencies
+        working-directory: backend
+        run: npm ci
+      
+      - name: 🔨 Build TypeScript
+        working-directory: backend
+        run: npm run build
+      
+      - name: 🚀 Run Lead Processor
+        working-directory: backend
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🚀 PulseB2B Ghost System - Starting..."
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          node dist/lead-processor.js
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          CRITICAL_THRESHOLD: ${{ secrets.CRITICAL_THRESHOLD || '80' }}
+      
+      - name: 📊 Upload Reports (Artifact)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lead-scoring-reports-${{ github.run_number }}
+          path: |
+            data/output/lead_scoring/*.csv
+            data/output/lead_scoring/*.json
+          retention-days: 7
+      
+      - name: 📈 Summary
+        if: always()
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "📊 Workflow Summary"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "⏰ Executed at: $(date -u)"
+          echo "🔄 Run number: ${{ github.run_number }}"
+          echo "🌐 Repository: ${{ github.repository }}"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      
+      - name: 🔔 Notify on Failure (Optional)
+        if: failure() && secrets.WEBHOOK_URL != ''
+        run: |
+          curl -X POST ${{ secrets.WEBHOOK_URL }} \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "text": "❌ Ghost System Failed",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*GitHub Action Failed*\n\nWorkflow: Lead Scoring\nRun: #${{ github.run_number }}\nTime: '"$(date -u)"'"
+                  }
+                }
+              ]
+            }'
+
+  # Optional: Run additional analysis or cleanup
+  post-process:
+    needs: scrape-and-process-leads
+    runs-on: ubuntu-latest
+    if: success()
+    
+    steps:
+      - name: 📝 Log Success
+        run: |
+          echo "✅ Lead scoring completed successfully"
+          echo "🕐 Next run in 1 hour"

@@ -41,6 +41,13 @@ PulseB2B es una solución completa para analistas de mercados que necesitan moni
 4. **Focus Geográfico**: México y Brasil exclusivamente
 5. **Reportes Automáticos**: CSV con rankings y recomendaciones de acción
 
+### 👻 **Ghost System (Backend Infrastructure)**
+1. **GitHub Actions como Cron** - Ejecuta scraping cada hora (gratis)
+2. **Supabase Storage** - PostgreSQL cloud con cache-first logic (7 días)
+3. **Webhook Notifier** - Alertas instantáneas a Slack/Discord cuando HPI > 80%
+4. **axios-retry** - Resiliencia de red con 3 reintentos exponenciales
+5. **TypeScript + Node.js** - Backend robusto con validación Zod
+
 ## 🎯 Características Principales
 
 ### � News Intelligence (Python)
@@ -749,7 +756,175 @@ python main.py --no-sentiment
 - [🚀 DEPLOYMENT.md](docs/DEPLOYMENT.md) - Guía de deployment AWS
 - [🤖 ML_ENGINE.md](docs/ML_ENGINE.md) - Motor de predicción ML con XGBoost
 - [🎯 LEAD_SCORING.md](docs/LEAD_SCORING.md) - **Sistema de Lead Scoring para LATAM**
+- [� Backend README](backend/README.md) - **Ghost System: GitHub Actions + Supabase**
 - [💻 Frontend README](frontend/README.md) - Dashboard Next.js con Mapbox
+
+---
+
+## 👻 Ghost System - Infraestructura Distribuida
+
+**Sistema de scraping automatizado usando GitHub Actions como "cron jobs" gratuitos.**
+
+### 🎯 Arquitectura
+
+```
+GitHub Actions (Hourly Cron)
+        ↓
+Python Lead Scoring Script
+        ↓
+Node.js/TypeScript Processor
+        ↓
+    ┌───┴────┐
+    ↓        ↓
+Supabase   Webhook
+(Storage)  (Slack/Discord)
+```
+
+### ⚡ Features Principales
+
+#### 1. **GitHub Actions como Infraestructura Gratis**
+- ✅ Ejecuta cada hora automáticamente
+- ✅ 2,000 minutos gratis/mes
+- ✅ Sin necesidad de servidores propios
+- ✅ Logs y artifacts incluidos
+
+#### 2. **Cache-First Logic (7 días)**
+```typescript
+// No re-scraper la misma empresa más de 1 vez por semana
+const shouldScrape = lastScrapedAt < sevenDaysAgo;
+```
+
+#### 3. **Supabase PostgreSQL Cloud**
+- ✅ 500 MB storage gratis
+- ✅ Row Level Security
+- ✅ 3 tablas: `lead_scores`, `scraping_cache`, `notification_logs`
+
+#### 4. **Webhook Notifier con Resiliencia**
+```typescript
+// axios-retry: 3 intentos con backoff exponencial
+axiosRetry(axios, {
+  retries: 3,
+  retryDelay: axiosRetry.exponentialDelay // 1s, 2s, 4s
+});
+```
+
+#### 5. **Notificaciones Inteligentes**
+- ✅ Solo empresas con HPI > 80% (configurable)
+- ✅ No spam: cooldown de 24h por empresa
+- ✅ Auto-detecta Slack o Discord
+- ✅ Rich formatting con todos los detalles
+
+### 🚀 Quick Start
+
+```bash
+# 1. Install dependencies
+cd backend
+npm install
+
+# 2. Configure Supabase
+# Create project at https://app.supabase.com
+# Run SQL schema from backend/src/supabase-client.ts
+
+# 3. Setup webhook (Slack or Discord)
+# Slack: https://api.slack.com/messaging/webhooks
+# Discord: Server Settings > Integrations > Webhooks
+
+# 4. Configure environment
+cp .env.example .env
+# Edit .env with your credentials
+
+# 5. Build and test
+npm run build
+npm start
+```
+
+### 🤖 GitHub Actions Setup
+
+1. **Add Secrets** (Settings > Secrets and Variables > Actions):
+   - `SUPABASE_URL`
+   - `SUPABASE_ANON_KEY`
+   - `WEBHOOK_URL`
+   - `CRITICAL_THRESHOLD` (default: 80)
+
+2. **Enable Workflow**: `.github/workflows/lead-scraping.yml`
+
+3. **Monitor**: Actions tab > Lead Scoring Automation
+
+### 📊 Ejemplo de Notificación Slack
+
+```
+🔥 CRITICAL LEAD DETECTED!
+
+Company: Kavak
+Country: 🇲🇽 Mexico
+HPI Score: 85.20 (CRITICAL)
+Urgency: HIGH
+Employees: 200
+Hiring Delta: +16 (next 6m)
+Last Funding: 2024-07-20
+
+💡 Why Critical?
+• Funding Recency Score: 92.50
+• Growth Urgency Score: 95
+
+This lead should be contacted immediately!
+```
+
+### 🔍 Monitoring Queries
+
+```sql
+-- Top leads in Supabase
+SELECT company_name, hpi_score, hpi_category
+FROM lead_scores
+ORDER BY hpi_score DESC
+LIMIT 10;
+
+-- Cache status
+SELECT company_name, last_scraped_at, scrape_count
+FROM scraping_cache
+ORDER BY last_scraped_at DESC;
+
+-- Notification history
+SELECT company_name, hpi_score, status, created_at
+FROM notification_logs
+ORDER BY created_at DESC;
+```
+
+### 💡 Business Logic
+
+**Lógica de Urgencia**:
+- Funding < 6 meses + crecimiento < 5% = **CRITICAL** (HPI boost 20%)
+- Crecimiento > 20% = **LOW** (empresa saturada)
+
+**Cache Strategy**:
+- Evita re-scrapear misma empresa < 7 días
+- Reduce API calls y rate limits
+- Mantiene datos frescos sin desperdicio
+
+**Notificaciones**:
+- Trigger: HPI ≥ 80% (configurable)
+- Cooldown: 24h por empresa (evita spam)
+- Retry: 3 intentos con exponential backoff
+
+### 📈 Costos
+
+| Servicio | Plan | Costo |
+|----------|------|-------|
+| GitHub Actions | Free tier | **$0** |
+| Supabase | Free tier | **$0** |
+| Slack/Discord | Free | **$0** |
+| **Total** | | **$0/mes** |
+
+### 🛠️ Tech Stack
+
+- **Node.js 20** + TypeScript 5.3
+- **@supabase/supabase-js** 2.39
+- **axios** + **axios-retry** 4.0
+- **Zod** 3.22 (runtime validation)
+
+Ver documentación completa: [backend/README.md](backend/README.md)
+
+---
 
 ## 🎓 Casos de Uso
 
