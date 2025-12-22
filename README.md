@@ -1,12 +1,153 @@
 # 🚀 PulseB2B - Market Intelligence Platform
 
-**Plataforma completa de inteligencia de mercados con arquitectura serverless multi-región.**
+**Complete market intelligence platform with multi-region serverless architecture.**
 
-Pipeline automatizado que monitorea noticias empresariales, detecta vacantes en tiempo real, predice contrataciones IT y genera lead scoring para LATAM.
+Automated pipeline that monitors business news, detects vacancies in real-time, predicts IT hiring, and generates lead scoring for global markets.
 
-## 📋 Descripción
+---
 
-PulseB2B es una solución completa para analistas de mercados que necesitan monitorear el ecosistema de startups y venture capital. El sistema integra cuatro componentes principales:
+## 🌟 **NEW: Oracle Funding Detector** 🔮
+
+**Zero-cost AI that detects US funding and predicts hiring needs**
+
+Parses SEC EDGAR RSS Feed for Form D filings, enriches with web scraping, and predicts hiring probability using ML - **NO API COSTS!**
+
+### 🎯 What Oracle Does
+- 📄 **SEC Form D Parser** - Auto-detects US fundraising (all venture rounds)
+- 🕷️ **Smart Web Scraper** - Extracts company info + tech stacks from websites
+- 🧠 **Hiring Probability ML** - Predicts hiring needs (0-100%) using scikit-learn
+- 🔍 **Tech Stack Detection** - NLP keyword matching (Python, React, AWS, etc.)
+- 📊 **CSV Export** - Ready-to-use lead list with scores
+
+### ✅ Key Features
+- **100% Free** - No paid APIs (only web scraping + NLTK + scikit-learn)
+- **Smart Scoring** - 4-factor model: Funding + Tech + Intent + Recency
+- **Tech Detection** - 50+ technologies across 6 categories
+- **Instant Results** - 3-5 seconds per company
+- **Production Ready** - Complete with logging and error handling
+
+### 🚀 Quick Start (5 minutes)
+```bash
+# Windows
+run_oracle.bat
+
+# Linux/Mac
+chmod +x run_oracle.sh
+./run_oracle.sh
+
+# Check results in data/output/oracle/
+```
+
+### 📖 Full Documentation
+📚 **[Oracle Documentation](./docs/ORACLE_DETECTOR.md)** - Complete guide with examples
+
+---
+
+## 🌟 **Serverless Ghost Infrastructure** 👻
+
+**Zero-cost automated market intelligence using GitHub Actions + Supabase**
+
+Fully serverless pipeline that runs every 6 hours to detect US tech companies expanding to LATAM:
+
+### 🎯 What It Does
+- 💰 **SEC.gov RSS Scraper** - Detects US company funding (Form D filings)
+- 💼 **LinkedIn Jobs via Google** - Finds LATAM hiring signals (no API needed)
+- 📰 **OSINT News Analysis** - Sentiment scoring with free tools
+- 🎯 **Automated Lead Scoring** - 0-100 scale with priority levels
+- ⚡ **Supabase Edge Functions** - Webhooks + real-time scoring
+
+### ✅ Key Features
+- **100% Free** - GitHub Actions + Supabase free tier = $0/month
+- **No APIs** - Uses RSS feeds, Google Search, and public sources
+- **Fully Automated** - Runs every 6 hours (4x daily)
+- **Production Ready** - Complete with monitoring and notifications
+
+### 🚀 Quick Start (15 minutes)
+```bash
+# 1. Install dependencies
+pip install -r requirements.txt
+python -c "import nltk; nltk.download('vader_lexicon')"
+
+# 2. Setup (Windows)
+.\setup_ghost.bat
+
+# 3. Setup (Linux/Mac)
+chmod +x setup_ghost.sh
+./setup_ghost.sh
+
+# 4. Follow the guide
+# See docs/QUICK_START_GHOST.md for Supabase setup
+```
+
+### 📊 Data Pipeline
+```
+GitHub Actions (Every 6 hours)
+  ↓
+SEC.gov RSS + LinkedIn + Google News
+  ↓
+Consolidate & Score
+  ↓
+Supabase PostgreSQL
+  ↓
+High Priority Leads Dashboard
+```
+
+### 📖 Documentation
+- 🚀 **[Quick Start Guide](./docs/QUICK_START_GHOST.md)** - 15-minute setup
+- 📚 **[Complete Documentation](./docs/SERVERLESS_GHOST_INFRASTRUCTURE.md)** - Technical deep dive
+- 📝 **[Implementation Summary](./docs/GHOST_IMPLEMENTATION_SUMMARY.md)** - Architecture overview
+
+### 🎯 Example Queries
+```sql
+-- Get critical priority leads
+SELECT * FROM high_priority_leads WHERE priority = 'critical';
+
+-- Recent funding + jobs activity
+SELECT * FROM recent_activity WHERE activity_date > NOW() - INTERVAL '7 days';
+
+-- Top scoring companies
+SELECT company_name, score, factors FROM lead_scores ORDER BY score DESC LIMIT 10;
+```
+
+---
+
+## 📋 Description
+
+PulseB2B is a complete solution for market analysts who need to monitor the startup and venture capital ecosystem. The system integrates six main components:
+
+### 🎯 **Intent Classification Engine for US Tech Market (NEW!)**
+1. **SEC EDGAR Scraper** - Detects new Form D filings for companies raising capital
+2. **OSINT Lead Scorer** - Free sentiment analysis using GoogleNews + TextBlob/NLTK
+3. **NLP Intent Classifier** - Detects outsourcing intent with HuggingFace transformers
+4. **Global Hiring Score (GHS)** - Calculates offshore hiring necessity
+   - Formula: `GHS = (Funding / US Median Salary) × Multipliers`
+   - Determines if companies MUST hire offshore
+   - Recommends optimal US/offshore team mix
+5. **Market Orchestrator** - Unified pipeline for comprehensive analysis
+
+**Key Features:**
+- ✅ 100% open-source (no paid APIs)
+- ✅ Heuristic scoring: Series A/B + Expansion = +50pts, Layoffs = -100pts
+- ✅ Keywords: 'Remote-friendly', 'Global team', 'LATAM/EMEA timezones'
+- ✅ Clean JSON output with hiring windows
+
+**Quick Start:**
+```bash
+# Install dependencies
+pip install sec-edgar-downloader GoogleNews textblob nltk
+
+# Run setup
+.\setup_intent_engine.bat  # Windows
+# or
+./setup_intent_engine.sh   # Linux/Mac
+
+# Test the engine
+python examples/run_intent_classification_pipeline.py
+```
+
+📖 **[Full Documentation](./docs/INTENT_CLASSIFICATION_ENGINE.md)** | 🚀 **[Quick Start Guide](./docs/QUICK_START_INTENT_ENGINE.md)**
+
+---
 
 ### 📰 **News Intelligence Pipeline (Python)**
 1. **Monitorea** múltiples fuentes de noticias (Google News, TechCrunch, VentureBeat, Crunchbase)

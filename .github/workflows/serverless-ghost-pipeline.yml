@@ -1,0 +1,235 @@
+name: Serverless Ghost - Market Intelligence Pipeline
+
+on:
+  # Run every 6 hours
+  schedule:
+    - cron: '0 */6 * * *'  # At minute 0 past every 6th hour (00:00, 06:00, 12:00, 18:00 UTC)
+  
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Target to run (all, news, sec, linkedin, osint)'
+        required: false
+        default: 'all'
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # Job 1: SEC.gov RSS Feed Scraping (US Funding Data)
+  sec-funding-scraper:
+    name: SEC Form D Scraper
+    runs-on: ubuntu-latest
+    if: github.event.inputs.target == 'all' || github.event.inputs.target == 'sec' || github.event_name == 'schedule'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install feedparser requests python-dotenv
+      
+      - name: Download NLTK data
+        run: |
+          python -c "import nltk; nltk.download('vader_lexicon', quiet=True); nltk.download('punkt', quiet=True)"
+      
+      - name: Run SEC RSS scraper
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: |
+          python src/ghost_sec_rss_scraper.py
+      
+      - name: Upload SEC scraping results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: sec-scraping-results
+          path: data/output/sec_rss/*.json
+          retention-days: 7
+
+  # Job 2: LinkedIn Jobs via Google Search (LATAM)
+  linkedin-jobs-scraper:
+    name: LinkedIn Jobs Scraper (LATAM)
+    runs-on: ubuntu-latest
+    if: github.event.inputs.target == 'all' || github.event.inputs.target == 'linkedin' || github.event_name == 'schedule'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install beautifulsoup4 lxml requests
+      
+      - name: Run LinkedIn Google Search scraper
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          GOOGLE_SEARCH_API_KEY: ${{ secrets.GOOGLE_SEARCH_API_KEY }}
+        run: |
+          python src/ghost_linkedin_google_scraper.py
+      
+      - name: Upload LinkedIn scraping results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: linkedin-scraping-results
+          path: data/output/linkedin_jobs/*.json
+          retention-days: 7
+
+  # Job 3: OSINT Lead Scoring
+  osint-lead-scoring:
+    name: OSINT Lead Scoring Engine
+    runs-on: ubuntu-latest
+    if: github.event.inputs.target == 'all' || github.event.inputs.target == 'osint' || github.event_name == 'schedule'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install sec-edgar-downloader GoogleNews textblob nltk
+      
+      - name: Download NLTK data
+        run: |
+          python -c "import nltk; nltk.download('vader_lexicon', quiet=True); nltk.download('punkt', quiet=True); nltk.download('stopwords', quiet=True)"
+      
+      - name: Run OSINT lead scoring
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: |
+          python src/ghost_osint_pipeline.py
+      
+      - name: Upload OSINT results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: osint-results
+          path: data/output/ghost_pipeline/*.json
+          retention-days: 7
+
+  # Job 4: News Intelligence Pipeline
+  news-intelligence:
+    name: News Intelligence Pipeline
+    runs-on: ubuntu-latest
+    if: github.event.inputs.target == 'all' || github.event.inputs.target == 'news' || github.event_name == 'schedule'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Run news intelligence pipeline
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: |
+          python scripts/run_predictions.py
+      
+      - name: Upload news analysis results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: news-intelligence-results
+          path: data/output/lead_scoring/*.csv
+          retention-days: 7
+
+  # Job 5: Push all results to Supabase
+  push-to-supabase:
+    name: Consolidate & Push to Supabase
+    runs-on: ubuntu-latest
+    needs: [sec-funding-scraper, linkedin-jobs-scraper, osint-lead-scoring, news-intelligence]
+    if: always()
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install dependencies
+        run: |
+          pip install requests python-dotenv
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts/
+      
+      - name: Consolidate and push to Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: |
+          python src/ghost_supabase_pusher.py artifacts/
+
+  # Job 6: Send notifications
+  notify:
+    name: Send Pipeline Notifications
+    runs-on: ubuntu-latest
+    needs: [push-to-supabase]
+    if: always()
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Send Slack notification
+        if: env.SLACK_WEBHOOK_URL != ''
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data "{\"text\":\"Ghost Pipeline completed: ${{ job.status }}\"}" \
+          $SLACK_WEBHOOK_URL
+      
+      - name: Send Discord notification
+        if: env.DISCORD_WEBHOOK_URL != ''
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data "{\"content\":\"🤖 Ghost Pipeline completed: ${{ job.status }}\"}" \
+          $DISCORD_WEBHOOK_URL

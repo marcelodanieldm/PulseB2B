@@ -34,3 +34,9 @@ tqdm==4.66.1
 xgboost>=2.0.3
 scikit-learn>=1.4.0
 shap>=0.44.0
+
+# Intent Classification Engine (US Tech Market Intelligence)
+sec-edgar-downloader>=5.0.0
+GoogleNews>=1.6.0
+textblob>=0.17.1
+nltk>=3.8.1

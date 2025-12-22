@@ -1,0 +1,153 @@
+name: Oracle Ghost - Automated Lead Detection
+
+on:
+  schedule:
+    # Run every 12 hours (00:00 and 12:00 UTC)
+    - cron: '0 0,12 * * *'
+  
+  workflow_dispatch:  # Allow manual trigger
+    inputs:
+      max_companies:
+        description: 'Max companies to process'
+        required: false
+        default: '20'
+
+env:
+  PYTHON_VERSION: '3.10'
+
+jobs:
+  oracle-detector:
+    name: 🔮 Oracle Funding Detection
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: 📦 Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements-oracle.txt
+          python -c "import nltk; nltk.download('punkt', quiet=True); nltk.download('stopwords', quiet=True)"
+      
+      - name: 🔮 Run Oracle Detector
+        id: oracle
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          MAX_COMPANIES: ${{ github.event.inputs.max_companies || '20' }}
+        run: |
+          echo "🔮 Starting Oracle Funding Detector..."
+          python scripts/oracle_funding_detector.py
+          
+          # Check if CSV was generated
+          if ls data/output/oracle/oracle_predictions_*.csv 1> /dev/null 2>&1; then
+            echo "✅ CSV generated successfully"
+            echo "oracle_success=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ No CSV found"
+            echo "oracle_success=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+      
+      - name: 📊 Validate output data
+        id: validate
+        run: |
+          echo "📊 Validating Oracle output..."
+          python scripts/validate_oracle_output.py
+          
+          if [ $? -eq 0 ]; then
+            echo "✅ Validation passed"
+            echo "validation_success=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Validation failed"
+            echo "validation_success=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+      
+      - name: 📤 Upload to Supabase
+        if: steps.validate.outputs.validation_success == 'true'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          echo "📤 Uploading to Supabase..."
+          python scripts/upload_to_supabase.py
+      
+      - name: 🔔 Send Telegram notifications
+        if: steps.validate.outputs.validation_success == 'true'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          echo "🔔 Sending critical alerts to Telegram..."
+          python scripts/telegram_notifier.py
+      
+      - name: 📊 Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: oracle-results-${{ github.run_number }}
+          path: |
+            data/output/oracle/*.csv
+            data/output/oracle/*.json
+          retention-days: 30
+      
+      - name: 📈 Generate summary
+        if: always()
+        run: |
+          echo "## 🔮 Oracle Ghost Run Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Run Date:** $(date -u)" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f "data/output/oracle/run_summary.json" ]; then
+            echo "### 📊 Results:" >> $GITHUB_STEP_SUMMARY
+            python -c "import json; data=json.load(open('data/output/oracle/run_summary.json')); print(f\"- Companies analyzed: {data.get('total_companies', 0)}\"); print(f\"- High probability (70%+): {data.get('high_probability_count', 0)}\"); print(f\"- Critical alerts sent: {data.get('critical_alerts', 0)}\")" >> $GITHUB_STEP_SUMMARY
+          fi
+      
+      - name: ❌ Notify on failure
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: '❌ Oracle Ghost Run Failed'
+          to: ${{ secrets.ALERT_EMAIL }}
+          from: GitHub Actions <noreply@github.com>
+          body: |
+            Oracle Ghost automation failed at ${{ github.run_number }}
+            
+            Workflow: ${{ github.workflow }}
+            Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            
+            Please check the logs for details.
+
+  # Job 2: Cleanup old artifacts (optional)
+  cleanup:
+    name: 🧹 Cleanup old data
+    runs-on: ubuntu-latest
+    needs: oracle-detector
+    if: success()
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: 🧹 Remove old CSV files (>30 days)
+        run: |
+          echo "🧹 Cleaning up old files..."
+          find data/output/oracle -name "*.csv" -mtime +30 -delete 2>/dev/null || true
+          find data/output/oracle -name "*.json" -mtime +30 -delete 2>/dev/null || true
+          echo "✅ Cleanup complete"

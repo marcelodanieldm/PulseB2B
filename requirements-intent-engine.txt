@@ -1,0 +1,24 @@
+# Intent Classification Engine - Requirements
+# Open-source only, no paid API dependencies
+
+# Core SEC EDGAR scraping
+sec-edgar-downloader>=5.0.0
+
+# OSINT news scraping (free alternative to paid news APIs)
+GoogleNews>=1.6.0
+
+# Sentiment analysis (free, no API keys)
+textblob>=0.17.1
+nltk>=3.8.1
+
+# Optional: Advanced NLP with HuggingFace (still free, but requires more resources)
+# Uncomment if you want transformer-based classification (higher accuracy)
+# transformers>=4.30.0
+# torch>=2.0.0
+
+# Data processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Existing project dependencies
+requests>=2.31.0
