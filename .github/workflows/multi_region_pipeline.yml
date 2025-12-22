@@ -1,0 +1,251 @@
+name: Multi-Region Lead Generation Pipeline
+
+on:
+  schedule:
+    # Run every 23 hours at minute 17 (avoids exact 24h pattern)
+    - cron: '17 */23 * * *'
+  workflow_dispatch:  # Allow manual triggers
+    inputs:
+      region:
+        description: 'Region to scrape (leave empty for all)'
+        required: false
+        default: ''
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # ============================================
+  # PARALLEL REGION SCRAPING (4 jobs)
+  # ============================================
+  
+  scrape-north-america:
+    if: github.event.inputs.region == '' || github.event.inputs.region == 'north_america'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: 📦 Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install requests deep-translator
+          echo "✅ Dependencies installed for North America"
+      
+      - name: 🌎 Scrape North America
+        env:
+          GOOGLE_CSE_API_KEY: ${{ secrets.GOOGLE_CSE_API_KEY }}
+          GOOGLE_CSE_ID: ${{ secrets.GOOGLE_CSE_ID }}
+        run: |
+          python scripts/multi_region_crawler.py north_america
+      
+      - name: 📤 Upload Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: scraped-north-america
+          path: data/output/scraped_north_america.csv
+          retention-days: 7
+  
+  scrape-central-america:
+    if: github.event.inputs.region == '' || github.event.inputs.region == 'central_america'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: 📦 Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install requests deep-translator
+          echo "✅ Dependencies installed for Central America"
+      
+      - name: 🌎 Scrape Central America
+        env:
+          GOOGLE_CSE_API_KEY: ${{ secrets.GOOGLE_CSE_API_KEY }}
+          GOOGLE_CSE_ID: ${{ secrets.GOOGLE_CSE_ID }}
+        run: |
+          python scripts/multi_region_crawler.py central_america
+      
+      - name: 📤 Upload Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: scraped-central-america
+          path: data/output/scraped_central_america.csv
+          retention-days: 7
+  
+  scrape-andean-region:
+    if: github.event.inputs.region == '' || github.event.inputs.region == 'andean_region'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: 📦 Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install requests deep-translator
+          echo "✅ Dependencies installed for Andean Region"
+      
+      - name: 🌎 Scrape Andean Region
+        env:
+          GOOGLE_CSE_API_KEY: ${{ secrets.GOOGLE_CSE_API_KEY }}
+          GOOGLE_CSE_ID: ${{ secrets.GOOGLE_CSE_ID }}
+        run: |
+          python scripts/multi_region_crawler.py andean_region
+      
+      - name: 📤 Upload Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: scraped-andean-region
+          path: data/output/scraped_andean_region.csv
+          retention-days: 7
+  
+  scrape-southern-cone:
+    if: github.event.inputs.region == '' || github.event.inputs.region == 'southern_cone'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: 📦 Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install requests deep-translator
+          echo "✅ Dependencies installed for Southern Cone"
+      
+      - name: 🌎 Scrape Southern Cone
+        env:
+          GOOGLE_CSE_API_KEY: ${{ secrets.GOOGLE_CSE_API_KEY }}
+          GOOGLE_CSE_ID: ${{ secrets.GOOGLE_CSE_ID }}
+        run: |
+          python scripts/multi_region_crawler.py southern_cone
+      
+      - name: 📤 Upload Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: scraped-southern-cone
+          path: data/output/scraped_southern_cone.csv
+          retention-days: 7
+  
+  # ============================================
+  # MERGE & PROCESS (runs after all regions)
+  # ============================================
+  
+  merge-and-process:
+    needs: [scrape-north-america, scrape-central-america, scrape-andean-region, scrape-southern-cone]
+    if: always()  # Run even if some regions fail
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: 📦 Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: 📥 Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+      
+      - name: 🔄 Merge Regional Results
+        run: |
+          python scripts/merge_regional_results.py
+      
+      - name: 🧠 Run Pulse Intelligence
+        run: |
+          python scripts/integrate_pulse_intelligence.py \
+            --input data/output/merged_global_scraped.csv \
+            --output data/output/pulse_scored_global.csv
+      
+      - name: 🌎 Run Regional Analysis
+        run: |
+          python scripts/integrate_regional_analysis.py \
+            --input data/output/pulse_scored_global.csv \
+            --output data/output/regional_enhanced_global.csv
+      
+      - name: 💾 Sync to Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          node scripts/supabase-sync-global.js
+      
+      - name: 📢 Send Telegram Alerts
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          node scripts/telegram-alerts-global.js
+      
+      - name: 📤 Upload Final Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-global-results
+          path: |
+            data/output/merged_global_scraped.csv
+            data/output/pulse_scored_global.csv
+            data/output/regional_enhanced_global.csv
+          retention-days: 30
+  
+  # ============================================
+  # ERROR NOTIFICATION
+  # ============================================
+  
+  notify-on-failure:
+    needs: [merge-and-process]
+    if: failure()
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 🚨 Send Failure Notification
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -X POST \
+            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d chat_id="${TELEGRAM_CHAT_ID}" \
+            -d text="🚨 Multi-Region Pipeline FAILED at $(date)" \
+            -d parse_mode="HTML"

@@ -40,3 +40,6 @@ sec-edgar-downloader>=5.0.0
 GoogleNews>=1.6.0
 textblob>=0.17.1
 nltk>=3.8.1
+
+# Multi-Region Translation (free, lightweight)
+deep-translator>=1.11.4

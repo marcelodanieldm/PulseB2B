@@ -26,10 +26,13 @@ import { cn } from "@/lib/cn"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { CompanyProfileModal } from "./CompanyProfileModal"
+import CountryFlag from "./CountryFlag"
+import { getCountryByCode } from "@/lib/americasMapData"
 
 export interface Company {
   id: string
   company_name: string
+  country_code?: string
   pulse_score: number
   desperation_level: "CRITICAL" | "HIGH" | "MODERATE" | "LOW"
   urgency: string
@@ -126,6 +129,26 @@ export function SignalTable({ data, isPremium, onUpgrade }: SignalTableProps) {
                   <Lock className="w-3 h-3 text-muted-foreground" />
                 )}
               </div>
+            </div>
+          </div>
+        )
+      },
+    },
+    {
+      accessorKey: "country_code",
+      header: "Country",
+      cell: ({ row }) => {
+        const countryCode = row.getValue("country_code") as string | undefined
+        if (!countryCode) return <span className="text-xs text-gray-500">N/A</span>
+        
+        const country = getCountryByCode(countryCode)
+        
+        return (
+          <div className="flex items-center gap-2">
+            <CountryFlag countryCode={countryCode} size="md" showTooltip={false} />
+            <div className="flex flex-col">
+              <span className="text-sm font-medium">{country?.name || countryCode}</span>
+              <span className="text-xs text-muted-foreground">{country?.currency || ''}</span>
             </div>
           </div>
         )
