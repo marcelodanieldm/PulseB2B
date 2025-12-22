@@ -1,0 +1,128 @@
+name: Generate Daily Teaser
+# =====================================================
+# DAILY TEASER GENERATION WORKFLOW
+# =====================================================
+# Purpose: NLP-driven "Company of the Day" selection
+# Schedule: Daily at 7:30 AM UTC (30 min before broadcast)
+# Cost: $0 (GitHub Actions free tier)
+# Author: Senior Data Scientist
+# Date: December 22, 2025
+# =====================================================
+
+on:
+  # Run daily at 7:30 AM UTC (30 minutes before Telegram broadcast)
+  # This ensures fresh teaser is ready when broadcast runs at 8:00 AM
+  schedule:
+    - cron: '30 7 * * *'
+  
+  # Allow manual trigger for testing
+  workflow_dispatch:
+
+jobs:
+  generate_teaser:
+    name: Generate Telegram Teaser
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      # =====================================================
+      # STEP 1: Checkout Repository
+      # =====================================================
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # =====================================================
+      # STEP 2: Setup Python
+      # =====================================================
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      # =====================================================
+      # STEP 3: Install Dependencies
+      # =====================================================
+      - name: Install dependencies
+        run: |
+          pip install supabase-py==2.3.4
+
+      # =====================================================
+      # STEP 4: Run Teaser Generator
+      # =====================================================
+      - name: Generate daily teaser
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          echo "=====================================================";
+          echo "📝 TELEGRAM TEASER GENERATOR";
+          echo "=====================================================";
+          echo "Time: $(date -u +"%Y-%m-%d %H:%M:%S UTC")";
+          echo "Workflow: ${{ github.workflow }}";
+          echo "=====================================================";
+          echo "";
+          
+          python src/telegram_teaser_generator.py
+
+      # =====================================================
+      # STEP 5: Report Success
+      # =====================================================
+      - name: Report success
+        if: success()
+        run: |
+          echo "";
+          echo "=====================================================";
+          echo "✅ TEASER GENERATION COMPLETED";
+          echo "=====================================================";
+          echo "Daily teaser ready for Telegram broadcast!";
+          echo "Broadcast will run in 30 minutes (8:00 AM UTC)";
+          echo "=====================================================";
+
+      # =====================================================
+      # STEP 6: Report Failure
+      # =====================================================
+      - name: Report failure
+        if: failure()
+        run: |
+          echo "";
+          echo "=====================================================";
+          echo "❌ TEASER GENERATION FAILED";
+          echo "=====================================================";
+          echo "Check logs above for error details.";
+          echo "Telegram broadcast will fallback to standard format.";
+          echo "=====================================================";
+          exit 1
+
+# =====================================================
+# WORKFLOW NOTES
+# =====================================================
+# 
+# Required Secrets:
+# - SUPABASE_URL: Your Supabase project URL
+# - SUPABASE_SERVICE_ROLE_KEY: Service role key
+# 
+# Timing Strategy:
+# - Teaser generation: 7:30 AM UTC
+# - Telegram broadcast: 8:00 AM UTC
+# - 30-minute buffer ensures teaser is ready
+# 
+# Selection Algorithm:
+# - Composite Score = 60% Hiring Probability + 40% Arbitrage Score
+# - Arbitrage Score factors:
+#   • US/Canada companies (high salaries)
+#   • Well-funded (can afford outsourcing)
+#   • Modern tech stack (LATAM talent match)
+#   • High desperation (urgent need)
+# 
+# Output Format:
+# Line 1: 🏢 Company Name + Location flag
+# Line 2: 💰 Funding + Top 3 technologies
+# Line 3: 🔥 Hiring probability + Reasoning
+# 
+# Cost Analysis:
+# - Runtime: ~2-3 minutes per day
+# - Monthly: 60-90 minutes
+# - Within GitHub's 2,000 free minutes
+# 
+# =====================================================

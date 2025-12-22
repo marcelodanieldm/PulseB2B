@@ -40,8 +40,22 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 /**
  * Format lead data as a beautiful Telegram message
+ * Uses NLP-generated daily_teaser if available
  */
 function formatLeadMessage(lead: any): string {
+  // Check if NLP-generated teaser exists (from Senior Data Scientist)
+  if (lead.daily_teaser) {
+    return `
+${lead.daily_teaser}
+
+━━━━━━━━━━━━━━━━━━━━
+👉 [View Full Details](${FRONTEND_URL}/continental?lead_id=${lead.lead_id}&utm_source=telegram&utm_medium=bot&utm_campaign=latest_command)
+
+_Premium: See contact info + exact funding 💎_
+    `.trim();
+  }
+  
+  // Fallback to standard format if no teaser
   const { 
     company_name, 
     desperation_score, 
@@ -72,7 +86,7 @@ ${company_insight || "High-value B2B prospect detected"}
 🛠 *Tech Stack:* ${tech_stack?.slice(0, 5).join(", ") || "N/A"}
 
 ━━━━━━━━━━━━━━━━━━━━
-👉 [View Full Details](${FRONTEND_URL}/continental?lead_id=${lead_id}&utm_source=telegram&utm_medium=bot&utm_campaign=daily_signal)
+👉 [View Full Details](${FRONTEND_URL}/continental?lead_id=${lead_id}&utm_source=telegram&utm_medium=bot&utm_campaign=latest_command)
   `.trim();
 }
 
@@ -243,32 +257,43 @@ bot.command("latest", async (ctx) => {
       return;
     }
 
-    // Get latest lead
+    // Get latest lead (with NLP-generated teaser if available)
     const { data: leads, error: leadError } = await supabase.rpc(
-      "get_latest_telegram_lead"
+      "get_latest_daily_teaser"
     );
 
-    if (leadError) {
-      console.error("[/latest] Query error:", leadError);
-      throw leadError;
-    }
-
-    if (!leads || leads.length === 0) {
-      await ctx.reply(
-        "🤷 No high-scoring leads found in the last 24 hours.\n" +
-        "Check back later or lower your standards! 😉"
+    // Fallback to standard query if no teaser available
+    if (leadError || !leads || leads.length === 0) {
+      console.log("[/latest] No daily teaser found, trying standard query...");
+      
+      const { data: fallbackLeads, error: fallbackError } = await supabase.rpc(
+        "get_latest_telegram_lead"
       );
       
-      // Log command
-      await supabase.rpc("log_telegram_command", {
-        p_chat_id: chatId,
-        p_command: "/latest",
-        p_command_args: "no_results",
-        p_processing_time_ms: Date.now() - startTime,
-        p_success: true,
-      });
+      if (fallbackError) {
+        console.error("[/latest] Fallback query error:", fallbackError);
+        throw fallbackError;
+      }
       
-      return;
+      if (!fallbackLeads || fallbackLeads.length === 0) {
+        await ctx.reply(
+          "🤷 No high-scoring leads found in the last 24 hours.\n" +
+          "Check back later or lower your standards! 😉"
+        );
+        
+        // Log command
+        await supabase.rpc("log_telegram_command", {
+          p_chat_id: chatId,
+          p_command: "/latest",
+          p_command_args: "no_results",
+          p_processing_time_ms: Date.now() - startTime,
+          p_success: true,
+        });
+        
+        return;
+      }
+      
+      leads = fallbackLeads;
     }
 
     const lead = leads[0];

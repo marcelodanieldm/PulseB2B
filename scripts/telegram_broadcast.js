@@ -119,8 +119,27 @@ function getCountryFlag(countryCode) {
 
 /**
  * Format lead as Telegram message
+ * Uses NLP-generated daily_teaser if available, otherwise fallback to standard format
  */
 function formatLeadMessage(lead) {
+  // Check if NLP-generated teaser exists
+  if (lead.daily_teaser) {
+    // Use the punchy 3-line teaser from Senior Data Scientist
+    const message = `
+🎯 *Daily Signal - ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}*
+
+${lead.daily_teaser}
+
+━━━━━━━━━━━━━━━━━━━━
+👉 [View Full Details](${FRONTEND_URL}/continental?lead_id=${lead.lead_id}&utm_source=telegram&utm_medium=bot&utm_campaign=daily_signal)
+
+_Premium: See contact info + exact funding 💎_
+    `.trim();
+    
+    return message;
+  }
+  
+  // Fallback to standard format if no teaser
   const scoreEmoji = lead.desperation_score >= 90 ? "🔥🔥🔥" : 
                      lead.desperation_score >= 80 ? "🔥🔥" : "🔥";
   
@@ -177,14 +196,28 @@ async function runDailyBroadcast() {
 
   try {
     // =====================================================
-    // STEP 1: Get Latest High-Scoring Lead
+    // STEP 1: Get Latest Daily Teaser (NLP-generated)
     // =====================================================
-    console.log('[Step 1] Fetching latest lead...');
+    console.log('[Step 1] Fetching latest daily teaser (NLP-generated)...');
     
-    const leadResponse = await querySupabase(
-      '/rest/v1/rpc/get_latest_telegram_lead',
+    // First, try to get the NLP-generated daily teaser
+    const teaserResponse = await querySupabase(
+      '/rest/v1/rpc/get_latest_daily_teaser',
       'POST'
     );
+    
+    let leadResponse;
+    
+    if (teaserResponse && teaserResponse.length > 0) {
+      console.log('✅ Found NLP-generated teaser! Using punchy format.');
+      leadResponse = teaserResponse;
+    } else {
+      console.log('⚠️  No daily teaser found. Falling back to standard lead query.');
+      leadResponse = await querySupabase(
+        '/rest/v1/rpc/get_latest_telegram_lead',
+        'POST'
+      );
+    }
 
     if (!leadResponse || leadResponse.length === 0) {
       console.error('❌ No leads found for broadcast. Exiting.');
