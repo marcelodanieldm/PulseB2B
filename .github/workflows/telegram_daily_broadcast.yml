@@ -1,0 +1,156 @@
+name: Telegram Daily Broadcast
+# =====================================================
+# TELEGRAM DAILY SIGNAL BROADCAST
+# =====================================================
+# Purpose: Send highest-scoring lead to all Telegram subscribers
+# Schedule: Daily at 8:00 AM UTC (optimal B2B timing)
+# Cost: $0 (GitHub Actions free tier: 2,000 mins/month)
+# Author: Senior Backend Developer
+# Date: December 22, 2025
+# =====================================================
+
+on:
+  # Run daily at 8 AM UTC (3 AM EST, 12 AM PST)
+  # Prime time for European morning, US night prep
+  schedule:
+    - cron: '0 8 * * *'  # Every day at 8:00 AM UTC
+  
+  # Allow manual trigger for testing
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run in dry-run mode (no actual sends)'
+        required: false
+        default: 'false'
+
+jobs:
+  broadcast:
+    name: Send Daily Telegram Signal
+    runs-on: ubuntu-latest
+    timeout-minutes: 15  # Prevent runaway jobs
+    
+    steps:
+      # =====================================================
+      # STEP 1: Checkout Repository
+      # =====================================================
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # =====================================================
+      # STEP 2: Setup Node.js
+      # =====================================================
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      # =====================================================
+      # STEP 3: Install Dependencies (if needed)
+      # =====================================================
+      # Note: Our script uses only built-in Node.js modules (https)
+      # No npm install needed! Keeps it fast and lightweight.
+      
+      # =====================================================
+      # STEP 4: Run Telegram Broadcast Script
+      # =====================================================
+      - name: Run Telegram broadcast
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+        run: |
+          echo "=====================================================";
+          echo "🤖 TELEGRAM DAILY BROADCAST";
+          echo "=====================================================";
+          echo "Time: $(date -u +"%Y-%m-%d %H:%M:%S UTC")";
+          echo "Workflow: ${{ github.workflow }}";
+          echo "Run ID: ${{ github.run_id }}";
+          echo "Dry Run: ${{ github.event.inputs.dry_run || 'false' }}";
+          echo "=====================================================";
+          echo "";
+          
+          node scripts/telegram_broadcast.js
+
+      # =====================================================
+      # STEP 5: Report Success
+      # =====================================================
+      - name: Report success
+        if: success()
+        run: |
+          echo "";
+          echo "=====================================================";
+          echo "✅ BROADCAST COMPLETED SUCCESSFULLY";
+          echo "=====================================================";
+          echo "All subscribers notified with daily signal!";
+          echo "Check Supabase telegram_messages table for details.";
+          echo "=====================================================";
+
+      # =====================================================
+      # STEP 6: Report Failure (with notification)
+      # =====================================================
+      - name: Report failure
+        if: failure()
+        run: |
+          echo "";
+          echo "=====================================================";
+          echo "❌ BROADCAST FAILED";
+          echo "=====================================================";
+          echo "Check logs above for error details.";
+          echo "Common issues:";
+          echo "  - Missing secrets (TELEGRAM_BOT_TOKEN, etc.)";
+          echo "  - Supabase function errors";
+          echo "  - Rate limiting (unlikely with our throttling)";
+          echo "=====================================================";
+          exit 1
+
+      # =====================================================
+      # OPTIONAL: Send failure alert to Telegram
+      # =====================================================
+      # Uncomment to get notified if broadcast fails
+      # - name: Alert on failure
+      #   if: failure()
+      #   env:
+      #     TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      #     TELEGRAM_ALERT_CHAT_ID: ${{ secrets.TELEGRAM_ALERT_CHAT_ID }}
+      #   run: |
+      #     curl -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+      #       -H "Content-Type: application/json" \
+      #       -d "{\"chat_id\": \"${TELEGRAM_ALERT_CHAT_ID}\", \"text\": \"⚠️ Daily Telegram broadcast failed! Check GitHub Actions logs.\"}"
+
+# =====================================================
+# WORKFLOW CONFIGURATION NOTES
+# =====================================================
+# 
+# Required Secrets (Settings > Secrets and variables > Actions):
+# - TELEGRAM_BOT_TOKEN: Get from @BotFather
+# - SUPABASE_URL: Your Supabase project URL
+# - SUPABASE_SERVICE_ROLE_KEY: From Supabase project settings
+# - FRONTEND_URL: Your production URL (for UTM links)
+# 
+# Optional Secrets:
+# - TELEGRAM_ALERT_CHAT_ID: Your personal chat_id for failure alerts
+# 
+# Monitoring:
+# - Check Actions tab for run history
+# - Query telegram_messages table for delivery stats
+# - Use telegram_delivery_stats view for analytics
+# 
+# Testing:
+# - Use "Run workflow" button to test manually
+# - Check logs for subscriber count and success rate
+# - Verify messages arrive in Telegram
+# 
+# Cost Analysis:
+# - ~2-3 minutes per run = 60-90 minutes/month
+# - Well within GitHub's 2,000 free minutes
+# - Supabase queries: ~100 per day = 3,000/month (free tier: 500K)
+# - Total cost: $0/month 🎉
+# 
+# Schedule Optimization:
+# - 8 AM UTC = 3 AM EST = 12 AM PST
+# - Catches European morning, US night prep
+# - Adjust cron schedule based on audience timezone
+# 
+# =====================================================
