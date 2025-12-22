@@ -1,0 +1,183 @@
+name: Ghost Crawler - Daily Scrape
+
+on:
+  schedule:
+    # Runs every 23 hours at random minutes to avoid detection patterns
+    - cron: '17 */23 * * *'  # Every 23 hours at minute 17
+  workflow_dispatch:  # Allow manual trigger for testing
+
+env:
+  NODE_VERSION: '18.x'
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  ghost-scrape-and-score:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      # ============================================
+      # 1. CHECKOUT & SETUP
+      # ============================================
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: 📦 Install Python Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          echo "✅ Python dependencies installed"
+      
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: 📦 Install Node.js Dependencies
+        run: |
+          npm ci
+          echo "✅ Node.js dependencies installed"
+      
+      # ============================================
+      # 2. INTELLIGENT SCRAPING (Google CSE Hack)
+      # ============================================
+      - name: 🕵️ Ghost Crawler - LinkedIn Job Search
+        env:
+          GOOGLE_CSE_API_KEY: ${{ secrets.GOOGLE_CSE_API_KEY }}
+          GOOGLE_CSE_ID: ${{ secrets.GOOGLE_CSE_ID }}
+        run: |
+          echo "🔍 Starting Ghost Crawler with Google Custom Search..."
+          node scripts/ghost-crawler.js
+          
+          if [ $? -eq 0 ]; then
+            echo "✅ Scraping complete"
+          else
+            echo "⚠️ Scraping encountered issues but continuing..."
+          fi
+      
+      # ============================================
+      # 3. PULSE INTELLIGENCE SCORING
+      # ============================================
+      - name: 🧠 Run Pulse Intelligence Scorer
+        run: |
+          echo "🧠 Running Pulse Intelligence analysis..."
+          
+          # Check if scraped data exists
+          if [ -f "data/output/scraped_companies.csv" ]; then
+            python scripts/integrate_pulse_intelligence.py \
+              --input data/output/scraped_companies.csv \
+              --output data/output/pulse_scored.csv \
+              --reports-dir data/output/pulse_reports \
+              --quiet
+            
+            echo "✅ Pulse Intelligence scoring complete"
+            
+            # Show quick stats
+            if [ -f "data/output/pulse_reports/pulse_summary_"*.json ]; then
+              echo "📊 Quick Stats:"
+              python -c "import json; import glob; f=glob.glob('data/output/pulse_reports/pulse_summary_*.json')[0]; d=json.load(open(f)); print(f\"  Critical: {d['critical_opportunities']}\n  High Priority: {d['high_priority']}\n  Avg Score: {d['average_pulse_score']:.1f}\")"
+            fi
+          else
+            echo "⚠️ No scraped data found, skipping scoring"
+            exit 0
+          fi
+      
+      # ============================================
+      # 4. SUPABASE DATABASE SYNC (Upsert Logic)
+      # ============================================
+      - name: 💾 Sync to Supabase with Upsert
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          echo "💾 Syncing scored data to Supabase..."
+          
+          if [ -f "data/output/pulse_scored.csv" ]; then
+            node scripts/supabase-sync.js
+            echo "✅ Database sync complete"
+          else
+            echo "⚠️ No scored data to sync"
+            exit 0
+          fi
+      
+      # ============================================
+      # 5. TELEGRAM ALERTS (90+ Score Threshold)
+      # ============================================
+      - name: 📢 Send Telegram Alerts
+        if: success()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          echo "📢 Sending high-priority alerts..."
+          
+          if [ -f "data/output/pulse_reports/critical_opportunities_"*.csv ]; then
+            node scripts/telegram-alerts.js
+            echo "✅ Alerts sent"
+          else
+            echo "ℹ️ No critical opportunities (90+ score) to alert"
+          fi
+      
+      # ============================================
+      # 6. ARTIFACT UPLOAD & CLEANUP
+      # ============================================
+      - name: 📤 Upload Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ghost-crawler-results-${{ github.run_number }}
+          path: |
+            data/output/scraped_companies.csv
+            data/output/pulse_scored.csv
+            data/output/pulse_reports/
+          retention-days: 7
+          if-no-files-found: warn
+      
+      - name: 🧹 Cleanup Old Artifacts
+        uses: c-hive/gha-remove-artifacts@v1
+        with:
+          age: '7 days'
+          skip-recent: 3
+      
+      # ============================================
+      # 7. ERROR NOTIFICATION
+      # ============================================
+      - name: 🚨 Notify on Failure
+        if: failure()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d chat_id="${TELEGRAM_CHAT_ID}" \
+            -d text="🚨 Ghost Crawler Failed
+          
+          Workflow: ${GITHUB_WORKFLOW}
+          Run: ${GITHUB_RUN_NUMBER}
+          
+          Check: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            -d parse_mode="HTML"
+          
+          echo "🚨 Failure notification sent"
+
+  # ============================================
+  # 8. WEEKLY DEEP ANALYSIS (Sunday Midnight)
+  # ============================================
+  weekly-analysis:
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 0 * * 0'  # Only on Sundays
+    needs: ghost-scrape-and-score
+    
+    steps:
+      - name: 📊 Generate Weekly Report
+        run: |
+          echo "📊 Generating weekly analysis..."
+          # Placeholder for future weekly analytics
+          echo "✅ Weekly report generation (coming soon)"
