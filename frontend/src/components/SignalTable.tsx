@@ -20,12 +20,16 @@ import {
   Lock,
   ExternalLink,
   Filter,
-  Search
+  Search,
+  Mail,
+  Phone,
+  Sparkles
 } from "lucide-react"
 import { cn } from "@/lib/cn"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { CompanyProfileModal } from "./CompanyProfileModal"
+import { GatedColumn } from "@/components/gated/GatedColumn"
 import CountryFlag from "./CountryFlag"
 import { getCountryByCode } from "@/lib/americasMapData"
 
@@ -40,11 +44,16 @@ export interface Company {
   expansion_density: number
   tech_stack: string[]
   funding_amount: number
+  funding_fuzzy_range?: string
   funding_date: string
   last_seen: string
   has_red_flags: boolean
   website_url?: string
   recommendation: string
+  company_insight?: string  // Auto-generated intelligence paragraph
+  email?: string | null
+  phone_number?: string | null
+  funding_exact_amount?: number | null
 }
 
 interface SignalTableProps {
@@ -102,6 +111,38 @@ export function SignalTable({ data, isPremium, onUpgrade }: SignalTableProps) {
           </div>
         )
       },
+    },
+    {
+      accessorKey: "company_insight",
+      header: () => (
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-blue-500" />
+          <span>Company Intelligence</span>
+          <Badge className="ml-2 bg-green-500/20 text-green-400 text-xs border-green-500/30">
+            FREE
+          </Badge>
+        </div>
+      ),
+      cell: ({ row }) => {
+        const insight = row.original.company_insight
+        
+        if (!insight) {
+          return (
+            <span className="text-xs text-muted-foreground italic">
+              No intelligence available
+            </span>
+          )
+        }
+        
+        return (
+          <div className="max-w-2xl">
+            <p className="text-sm text-gray-300 leading-relaxed">
+              {insight}
+            </p>
+          </div>
+        )
+      },
+      size: 400,
     },
     {
       accessorKey: "company_name",
@@ -209,6 +250,46 @@ export function SignalTable({ data, isPremium, onUpgrade }: SignalTableProps) {
       },
     },
     {
+      accessorKey: "email",
+      header: () => (
+        <div className="flex items-center gap-2">
+          <Mail className="w-4 h-4" />
+          Email
+        </div>
+      ),
+      cell: ({ row }) => {
+        const email = row.original.email
+        
+        return (
+          <GatedColumn
+            value={email}
+            columnType="email"
+            showButton={true}
+          />
+        )
+      },
+    },
+    {
+      accessorKey: "phone_number",
+      header: () => (
+        <div className="flex items-center gap-2">
+          <Phone className="w-4 h-4" />
+          Phone
+        </div>
+      ),
+      cell: ({ row }) => {
+        const phone = row.original.phone_number
+        
+        return (
+          <GatedColumn
+            value={phone}
+            columnType="phone"
+            showButton={true}
+          />
+        )
+      },
+    },
+    {
       accessorKey: "tech_stack",
       header: "Tech Stack",
       cell: ({ row }) => {
@@ -234,21 +315,53 @@ export function SignalTable({ data, isPremium, onUpgrade }: SignalTableProps) {
     },
     {
       accessorKey: "funding_amount",
-      header: "Funding",
+      header: () => (
+        <div className="flex flex-col">
+          <span>Funding</span>
+          <span className="text-xs text-green-400 font-normal">
+            Exact amount for Premium
+          </span>
+        </div>
+      ),
       cell: ({ row }) => {
-        const amount = row.getValue("funding_amount") as number
+        const exactAmount = row.original.funding_exact_amount
+        const fuzzyRange = row.original.funding_fuzzy_range || "Not disclosed"
         const date = row.original.funding_date
         
+        // Premium users see exact amount
+        if (isPremium && exactAmount) {
+          return (
+            <div className="flex flex-col">
+              <span className="font-semibold text-blue-400">
+                ${(exactAmount / 1000000).toFixed(2)}M
+              </span>
+              {date && (
+                <span className="text-xs text-muted-foreground">
+                  {new Date(date).toLocaleDateString()}
+                </span>
+              )}
+            </div>
+          )
+        }
+        
+        // Free users see fuzzy range (always visible)
         return (
           <div className="flex flex-col">
-            <span className="font-semibold">
-              {amount > 0 ? `$${(amount / 1000000).toFixed(1)}M` : "N/A"}
+            <span className="font-medium text-gray-300">
+              {fuzzyRange}
             </span>
             {date && (
               <span className="text-xs text-muted-foreground">
                 {new Date(date).toLocaleDateString()}
               </span>
             )}
+            <button
+              onClick={onUpgrade}
+              className="mt-1 text-xs text-blue-500 hover:text-blue-400 flex items-center gap-1"
+            >
+              <Lock className="w-3 h-3" />
+              Unlock exact amount
+            </button>
           </div>
         )
       },

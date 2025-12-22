@@ -1,0 +1,61 @@
+name: Weekly Lead Digest
+
+# This workflow sends a weekly digest of top leads to Telegram
+# Runs every Monday at 10:00 AM UTC (customizable)
+
+on:
+  schedule:
+    # Cron format: minute hour day month weekday
+    # 0 10 * * 1 = Every Monday at 10:00 AM UTC
+    - cron: '0 10 * * 1'
+  
+  # Allow manual trigger from GitHub Actions UI
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Number of top leads to include'
+        required: false
+        default: '20'
+
+jobs:
+  send-weekly-digest:
+    name: Send Weekly Lead Digest
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: |
+          npm install @supabase/supabase-js axios dotenv
+      
+      - name: Send Telegram digest
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_ALERT_CHAT_ID: ${{ secrets.TELEGRAM_ALERT_CHAT_ID }}
+        run: |
+          LIMIT=${{ github.event.inputs.limit || '20' }}
+          echo "📊 Sending weekly digest with top $LIMIT leads..."
+          node scripts/telegram_alert_service.js digest $LIMIT
+      
+      - name: Log completion
+        if: success()
+        run: |
+          echo "✅ Weekly lead digest sent successfully!"
+          echo "📅 $(date)"
+      
+      - name: Log failure
+        if: failure()
+        run: |
+          echo "❌ Failed to send weekly digest"
+          echo "📅 $(date)"
+          echo "Check logs above for details"

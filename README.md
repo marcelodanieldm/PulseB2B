@@ -6,7 +6,96 @@ Automated pipeline that monitors business news, detects vacancies in real-time, 
 
 ---
 
-## 🌟 **NEW: Oracle Funding Detector** 🔮
+## 🌟 **NEW: Lead Enrichment & Prioritization System** 🎯
+
+**Automatically enrich user signups and send Telegram alerts for high-value prospects**
+
+Multi-stage pipeline that enriches company data from email domains, calculates priority scores using 5-component algorithm, and triggers real-time alerts for 500+ employee Software Factories.
+
+### 🎯 What It Does
+- 🏢 **Company Enrichment** - Extract company data from email domains (Clearbit/Hunter APIs)
+- 📊 **Smart Lead Scoring** - 5-component algorithm: Employees (0-100) + Industry (0-50) + Role (0-50) × Revenue (1.0-1.5x) + Bonuses (+50)
+- 🏭 **Software Factory Detection** - Identify tech companies by keywords (15+ patterns)
+- 🚨 **Real-Time Telegram Alerts** - Instant notifications for 500+ employee Software Factories
+- 📈 **Priority Tiers** - CRITICAL (250+), HIGH (200+), MEDIUM (150+), LOW (100+), MINIMAL (<100)
+- 📅 **Weekly Digest** - Top leads summary sent every Monday via GitHub Actions
+
+### ✅ Key Features
+- **Multi-Source Enrichment** - Clearbit (comprehensive) → Hunter.io (fallback) → Basic DNS (validation)
+- **Weighted Scoring** - Employee count, industry type, job role, revenue, tech stack, Software Factory
+- **High-Value Criteria** - 500+ employees AND Software Factory = immediate Telegram alert
+- **Batch Processing** - Retroactive enrichment for existing users (rate-limited)
+- **Real-Time Webhook** - Automatic enrichment on user signup (non-blocking)
+- **Admin Dashboard** - View top leads with filtering by priority tier
+
+### 🚀 Quick Start (15 minutes)
+```bash
+# 1. Install dependencies
+npm install @supabase/supabase-js axios dotenv
+
+# 2. Configure environment (.env)
+SUPABASE_URL=your-url
+SUPABASE_SERVICE_KEY=your-key
+CLEARBIT_API_KEY=your-key  # or HUNTER_API_KEY
+TELEGRAM_BOT_TOKEN=your-token
+TELEGRAM_ALERT_CHAT_ID=your-chat-id
+
+# 3. Apply database migration
+supabase db push
+
+# 4. Test all components
+./test_lead_enrichment.sh   # Linux/Mac
+test_lead_enrichment.bat    # Windows
+
+# 5. Enrich a user
+node scripts/lead_enrichment_service.js enrich USER_ID EMAIL
+node scripts/lead_scoring_engine.js score USER_ID
+node scripts/telegram_alert_service.js alert USER_ID
+
+# 6. Start webhook server (production)
+node scripts/signup_webhook.js
+```
+
+### 📊 Example High-Value Alert
+```
+🚨 HIGH VALUE PROSPECT ALERT! 🚨
+
+🎯 Lead Score: 311 (CRITICAL)
+
+👤 Sarah Johnson, CTO
+📧 cto@acme.com
+📅 Signed up: 12/22/2025, 3:45 PM
+
+🏢 Acme Software Solutions
+📊 850 employees ⭐
+💰 Revenue: $75.0M
+📍 San Francisco, CA
+
+💡 Why High Value?
+• ✅ Software Factory
+• ✅ 500+ Employees
+• Score: Employee(90) + Industry(50) + Role(50) × 1.4x + Bonuses(+45) = 311
+
+🎬 Next Actions:
+• Schedule demo call within 24 hours
+• Send personalized onboarding email
+```
+
+### 📖 Full Documentation
+📚 **[Complete Guide](./LEAD_ENRICHMENT_SYSTEM.md)** - Setup, scoring algorithm, API integration  
+🏗️ **[Architecture](./LEAD_ENRICHMENT_ARCHITECTURE.md)** - Pipeline diagrams and data flow  
+⚡ **[Quick Reference](./LEAD_ENRICHMENT_QUICK_REFERENCE.md)** - Common commands and queries  
+📋 **[Setup Checklist](./LEAD_ENRICHMENT_SETUP_CHECKLIST.md)** - Step-by-step deployment guide  
+📝 **[Implementation Summary](./LEAD_ENRICHMENT_SUMMARY.md)** - Project overview and deliverables
+
+### 💰 Costs
+- **Clearbit API**: $99/month (200 requests/day) - Recommended for production
+- **Hunter.io API**: FREE (50 requests/month) or $49/month (1000 requests) - Good for testing
+- **Telegram Bot**: FREE unlimited - Always use
+
+---
+
+## 🌟 **Oracle Funding Detector** 🔮
 
 **Zero-cost AI that detects US funding and predicts hiring needs**
 

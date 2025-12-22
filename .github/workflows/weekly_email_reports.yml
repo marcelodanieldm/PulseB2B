@@ -1,0 +1,125 @@
+name: Weekly Email Reports
+
+on:
+  # Run every Sunday at 9:00 AM UTC
+  schedule:
+    - cron: '0 9 * * 0'
+  
+  # Allow manual trigger for testing
+  workflow_dispatch:
+    inputs:
+      test_mode:
+        description: 'Send test email only'
+        required: false
+        default: 'false'
+      test_email:
+        description: 'Test recipient email address'
+        required: false
+        default: ''
+
+jobs:
+  send-weekly-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm install @sendgrid/mail
+          npm install @supabase/supabase-js
+          npm install handlebars
+
+      - name: Run test email (manual trigger)
+        if: github.event.inputs.test_mode == 'true' && github.event.inputs.test_email != ''
+        env:
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+          FROM_NAME: 'PulseB2B Intelligence'
+          BASE_URL: ${{ secrets.BASE_URL }}
+        run: |
+          echo "📧 Sending test email to ${{ github.event.inputs.test_email }}..."
+          node scripts/sendgrid_mailer.js --test --email=${{ github.event.inputs.test_email }}
+
+      - name: Generate weekly report data
+        if: github.event.inputs.test_mode != 'true'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          BASE_URL: ${{ secrets.BASE_URL }}
+        run: |
+          echo "📊 Generating weekly report data..."
+          node scripts/weekly_report_generator.js
+
+      - name: Send emails via SendGrid
+        if: github.event.inputs.test_mode != 'true'
+        env:
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+          FROM_NAME: 'PulseB2B Intelligence'
+          BASE_URL: ${{ secrets.BASE_URL }}
+        run: |
+          echo "📤 Sending weekly email reports..."
+          node scripts/sendgrid_mailer.js
+
+      - name: Cleanup expired tracking tokens
+        if: always()
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          echo "🧹 Cleaning up expired tracking tokens..."
+          node scripts/click_tracker.js cleanup
+
+      - name: Generate click analytics report
+        if: github.event.inputs.test_mode != 'true'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          echo "📈 Generating click analytics (last 7 days)..."
+          node scripts/click_tracker.js report 7
+
+      - name: Send Telegram notification on success
+        if: success() && github.event.inputs.test_mode != 'true'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d chat_id="${TELEGRAM_CHAT_ID}" \
+            -d parse_mode="Markdown" \
+            -d text="✅ *Weekly Email Report Sent*%0A%0ATimestamp: $(date -u +"%Y-%m-%d %H:%M UTC")%0AWorkflow: Weekly Reports%0AStatus: Success"
+
+      - name: Send Telegram notification on failure
+        if: failure() && github.event.inputs.test_mode != 'true'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d chat_id="${TELEGRAM_CHAT_ID}" \
+            -d parse_mode="Markdown" \
+            -d text="❌ *Weekly Email Report Failed*%0A%0ATimestamp: $(date -u +"%Y-%m-%d %H:%M UTC")%0AWorkflow: Weekly Reports%0AStatus: Failed%0A%0ACheck logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+      - name: Upload email logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: email-report-logs
+          path: |
+            data/logs/*.log
+            data/logs/email_*.json
+          retention-days: 30

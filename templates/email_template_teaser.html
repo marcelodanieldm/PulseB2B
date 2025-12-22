@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PulseB2B Weekly Report - Top 5 Hiring Opportunities</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background-color: #f3f4f6;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #ffffff;
+    }
+    .header {
+      background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+      padding: 40px 20px;
+      text-align: center;
+    }
+    .header h1 {
+      margin: 0;
+      color: #ffffff;
+      font-size: 28px;
+      font-weight: 700;
+    }
+    .header p {
+      margin: 10px 0 0 0;
+      color: #bfdbfe;
+      font-size: 14px;
+    }
+    .badge {
+      display: inline-block;
+      background-color: #fbbf24;
+      color: #1f2937;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+    .content {
+      padding: 30px 20px;
+    }
+    .greeting {
+      font-size: 18px;
+      color: #1f2937;
+      margin-bottom: 20px;
+    }
+    .intro {
+      font-size: 14px;
+      color: #6b7280;
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+    .company-card {
+      background-color: #f9fafb;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      position: relative;
+      transition: transform 0.2s;
+    }
+    .company-card:hover {
+      border-color: #3b82f6;
+      transform: translateY(-2px);
+    }
+    .company-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .company-name {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1f2937;
+      margin: 0;
+    }
+    .country-flag {
+      font-size: 28px;
+    }
+    .company-meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+    }
+    .meta-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge-critical {
+      background-color: #fee2e2;
+      color: #dc2626;
+    }
+    .badge-high {
+      background-color: #fef3c7;
+      color: #d97706;
+    }
+    .badge-moderate {
+      background-color: #dbeafe;
+      color: #2563eb;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .stat-item {
+      background-color: #ffffff;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+    }
+    .stat-label {
+      font-size: 11px;
+      color: #9ca3af;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .stat-value {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1f2937;
+    }
+    .cta-button {
+      display: block;
+      width: 100%;
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: #ffffff;
+      text-align: center;
+      padding: 14px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+      transition: opacity 0.2s;
+    }
+    .cta-button:hover {
+      opacity: 0.9;
+    }
+    .premium-overlay {
+      position: relative;
+    }
+    .premium-lock {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: #fbbf24;
+      color: #1f2937;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .tech-stack {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+    }
+    .tech-tag {
+      background-color: #e0e7ff;
+      color: #4f46e5;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .footer {
+      background-color: #1f2937;
+      padding: 30px 20px;
+      text-align: center;
+    }
+    .footer-text {
+      color: #9ca3af;
+      font-size: 12px;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+    .footer-links {
+      margin-top: 20px;
+    }
+    .footer-link {
+      color: #60a5fa;
+      text-decoration: none;
+      font-size: 12px;
+      margin: 0 10px;
+    }
+    .footer-link:hover {
+      text-decoration: underline;
+    }
+    .divider {
+      height: 1px;
+      background-color: #e5e7eb;
+      margin: 30px 0;
+    }
+    .highlight-box {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border-left: 4px solid #f59e0b;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+    }
+    .highlight-text {
+      margin: 0;
+      font-size: 13px;
+      color: #78350f;
+      font-weight: 500;
+    }
+    @media only screen and (max-width: 600px) {
+      .header h1 {
+        font-size: 24px;
+      }
+      .content {
+        padding: 20px 15px;
+      }
+      .company-card {
+        padding: 15px;
+      }
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>🎯 Your Weekly Hiring Intelligence</h1>
+      <p>Top 5 Companies Most Likely to Hire This Week</p>
+      <span class="badge">{{reportDate}}</span>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <!-- Greeting -->
+      <div class="greeting">
+        Hi {{firstName}},
+      </div>
+
+      <!-- Introduction -->
+      <div class="intro">
+        Your personalized <strong>PulseB2B Intelligence Report</strong> is ready. We've analyzed thousands of companies across 19 countries and identified the <strong>top 5 opportunities</strong> with the highest hiring probability this week.
+      </div>
+
+      <!-- Premium Teaser (if not premium) -->
+      {{#unless isPremium}}
+      <div class="highlight-box">
+        <p class="highlight-text">
+          🔓 <strong>Unlock Full Intelligence:</strong> Upgrade to Premium for complete company profiles, direct contact details, and unlimited access to our 600+ lead database.
+        </p>
+      </div>
+      {{/unless}}
+
+      <!-- Company Cards -->
+      {{#each companies}}
+      <div class="company-card {{#if isPremiumContent}}premium-overlay{{/if}}">
+        {{#if isPremiumContent}}
+        <div class="premium-lock">
+          🔒 Premium
+        </div>
+        {{/if}}
+
+        <!-- Company Header -->
+        <div class="company-header">
+          <h2 class="company-name">{{company_name}}</h2>
+          <span class="country-flag">{{flag}}</span>
+        </div>
+
+        <!-- Meta Badges -->
+        <div class="company-meta">
+          <span class="meta-badge badge-{{desperation_level}}">
+            {{#if (eq desperation_level 'CRITICAL')}}🔥{{/if}}
+            {{desperation_level}}
+          </span>
+          <span class="meta-badge" style="background-color: #e0f2fe; color: #0369a1;">
+            {{urgency}} Urgency
+          </span>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-label">Hiring Probability</div>
+            <div class="stat-value" style="color: #10b981;">{{hiring_probability}}%</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Pulse Score</div>
+            <div class="stat-value" style="color: {{urgencyColor}};">{{pulse_score}}/100</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Funding Raised</div>
+            <div class="stat-value">{{fundingFormatted}}</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Expansion Rate</div>
+            <div class="stat-value">{{expansion_density}}%</div>
+          </div>
+        </div>
+
+        <!-- Tech Stack -->
+        {{#if tech_stack}}
+        <div class="tech-stack">
+          {{#each tech_stack}}
+          <span class="tech-tag">{{this}}</span>
+          {{/each}}
+        </div>
+        {{/if}}
+
+        <!-- CTA Button with Tracking -->
+        <a href="{{trackingUrl}}" class="cta-button">
+          View Full Company Intelligence →
+        </a>
+      </div>
+      {{/each}}
+
+      <!-- Divider -->
+      <div class="divider"></div>
+
+      <!-- Additional CTA -->
+      <div style="text-align: center; margin-top: 30px;">
+        <p style="color: #6b7280; font-size: 14px; margin-bottom: 15px;">
+          Want to see more opportunities?
+        </p>
+        <a href="{{BASE_URL}}/dashboard" style="display: inline-block; background-color: #1f2937; color: #ffffff; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
+          Explore Full Dashboard
+        </a>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p class="footer-text">
+        <strong>PulseB2B</strong> - AI-Powered B2B Lead Intelligence<br>
+        Tracking hiring signals across 19 countries in the Americas
+      </p>
+      
+      <div class="footer-links">
+        <a href="{{BASE_URL}}/dashboard" class="footer-link">Dashboard</a>
+        <a href="{{BASE_URL}}/continental" class="footer-link">Continental View</a>
+        <a href="{{BASE_URL}}/settings/notifications" class="footer-link">Preferences</a>
+        <a href="{{BASE_URL}}/unsubscribe?token={{unsubscribeToken}}" class="footer-link">Unsubscribe</a>
+      </div>
+
+      <p class="footer-text" style="margin-top: 20px; font-size: 11px;">
+        You're receiving this because you subscribed to PulseB2B weekly reports.<br>
+        © 2025 PulseB2B. All rights reserved.
+      </p>
+    </div>
+  </div>
+</body>
+</html>

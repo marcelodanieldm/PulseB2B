@@ -6,19 +6,31 @@ import RegionalHeatmap from '@/components/RegionalHeatmap';
 import RegionSelector from '@/components/RegionSelector';
 import GlobalSignalTicker from '@/components/GlobalSignalTicker';
 import { SignalTable } from '@/components/SignalTable';
-import { Activity, Globe, TrendingUp, DollarSign, Users, Zap } from 'lucide-react';
+import { UnlockPremiumModal } from '@/components/UnlockPremiumModal';
+import { AuthGuard } from '@/components/auth/LoginModal';
+import { useAuth } from '@/hooks/useAuth';
+import { usePremiumStatus } from '@/hooks/usePremiumStatus';
+import { Activity, Globe, TrendingUp, DollarSign, Users, Zap, Crown, Sparkles } from 'lucide-react';
 
-export default function ContinentalDashboard() {
+function ContinentalDashboardContent() {
   const [selectedRegion, setSelectedRegion] = useState('all');
   const [sortBy, setSortBy] = useState<'pulse' | 'arbitrage'>('pulse');
   const [heatmapData, setHeatmapData] = useState<Record<string, any>>({});
   const [tableData, setTableData] = useState<any[]>([]);
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [stats, setStats] = useState({
     totalLeads: 0,
     criticalLeads: 0,
     avgPulseScore: 0,
     topArbitrageCountry: ''
   });
+
+  // Authentication and premium status
+  const { user, isAuthenticated } = useAuth();
+  const { isPremium, loading: premiumLoading } = usePremiumStatus();
+
+  // Stripe payment link - replace with your actual link
+  const STRIPE_PAYMENT_LINK = process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK || 'https://buy.stripe.com/your_link_here';
 
   // Load data on mount (replace with real API call)
   useEffect(() => {
@@ -53,10 +65,15 @@ export default function ContinentalDashboard() {
         expansion_density: 85,
         tech_stack: ['React', 'Node.js', 'AWS'],
         funding_amount: 50000000,
+        funding_fuzzy_range: '$10M-$50M',
         funding_date: '2024-11-15',
         last_seen: '2024-12-22',
         has_red_flags: false,
-        recommendation: 'Strong candidate for immediate outreach'
+        recommendation: 'Strong candidate for immediate outreach',
+        company_insight: 'TechCorp USA raised $10M-$50M (backed by Y Combinator) in San Francisco using React, Node.js, AWS. 🔥 Actively hiring - URGENT need detected. Signal: Recent funding round. Team size: ~150.',
+        email: isPremium ? 'hiring@techcorp.com' : null,
+        phone_number: isPremium ? '+1 (415) 555-0123' : null,
+        funding_exact_amount: isPremium ? 50000000 : null
       },
       {
         id: '2',
@@ -69,10 +86,15 @@ export default function ContinentalDashboard() {
         expansion_density: 78,
         tech_stack: ['Python', 'Django', 'PostgreSQL'],
         funding_amount: 30000000,
+        funding_fuzzy_range: '$10M-$50M',
         funding_date: '2024-10-28',
         last_seen: '2024-12-21',
         has_red_flags: false,
-        recommendation: 'High arbitrage opportunity - lower cost market'
+        recommendation: 'High arbitrage opportunity - lower cost market',
+        company_insight: 'DataFlow Brasil raised $10M-$50M in São Paulo using Python, Django, PostgreSQL. 📈 High hiring probability - High urgency signals. 💰 High arbitrage opportunity (8.5/10 savings potential). Signal: Active job posting. Team size: ~85.',
+        email: isPremium ? 'rh@dataflow.com.br' : null,
+        phone_number: isPremium ? '+55 11 98765-4321' : null,
+        funding_exact_amount: isPremium ? 30000000 : null
       },
       {
         id: '3',
@@ -85,10 +107,15 @@ export default function ContinentalDashboard() {
         expansion_density: 72,
         tech_stack: ['Vue.js', 'Laravel', 'MySQL'],
         funding_amount: 15000000,
+        funding_fuzzy_range: '$5M-$10M',
         funding_date: '2024-09-12',
         last_seen: '2024-12-20',
         has_red_flags: false,
-        recommendation: 'Excellent cost-benefit ratio'
+        recommendation: 'Excellent cost-benefit ratio',
+        company_insight: 'CloudNine Mexico raised $5M-$10M in Mexico City using Vue.js, Laravel, MySQL. 👀 Exploring candidates - Moderate urgency. 💰 High arbitrage opportunity (9.0/10 savings potential). Signal: Tech stack migration. Team size: ~45.',
+        email: isPremium ? 'talent@cloudnine.mx' : null,
+        phone_number: isPremium ? '+52 55 1234 5678' : null,
+        funding_exact_amount: isPremium ? 15000000 : null
       },
       {
         id: '4',
@@ -101,10 +128,15 @@ export default function ContinentalDashboard() {
         expansion_density: 68,
         tech_stack: ['Angular', 'Java', 'Oracle'],
         funding_amount: 8000000,
+        funding_fuzzy_range: '$5M-$10M',
         funding_date: '2024-08-05',
         last_seen: '2024-12-19',
         has_red_flags: false,
-        recommendation: 'Premium arbitrage opportunity'
+        recommendation: 'Premium arbitrage opportunity',
+        company_insight: 'SecureNet Argentina raised $5M-$10M in Buenos Aires using Angular, Java, Oracle. 👀 Exploring candidates. 💰 Premium arbitrage opportunity (9.2/10 savings potential). Signal: GitHub activity spike. Team size: ~35.',
+        email: isPremium ? 'jobs@securenet.com.ar' : null,
+        phone_number: isPremium ? '+54 11 4567 8900' : null,
+        funding_exact_amount: isPremium ? 8000000 : null
       }
     ];
 
@@ -152,6 +184,12 @@ export default function ContinentalDashboard() {
                 <h1 className="text-3xl font-bold text-white">
                   Continental Command Center
                 </h1>
+                {isPremium && (
+                  <span className="px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold rounded-full flex items-center gap-1.5">
+                    <Crown className="w-3 h-3" />
+                    PREMIUM
+                  </span>
+                )}
               </div>
               <p className="text-gray-400 text-sm">
                 Real-time intelligence from Canada to Argentina • 19 Countries • $0 Infrastructure Cost
@@ -346,12 +384,28 @@ export default function ContinentalDashboard() {
             </div>
             <SignalTable 
               data={tableData} 
-              isPremium={true} 
-              onUpgrade={() => {}} 
+              isPremium={isPremium} 
+              onUpgrade={() => setShowPremiumModal(true)} 
             />
           </div>
         </motion.div>
       </div>
+
+      {/* Unlock Premium Modal */}
+      <UnlockPremiumModal
+        isOpen={showPremiumModal}
+        onClose={() => setShowPremiumModal(false)}
+        stripePaymentLink={STRIPE_PAYMENT_LINK}
+      />
     </div>
+  );
+}
+
+// Main export with AuthGuard wrapper
+export default function ContinentalDashboard() {
+  return (
+    <AuthGuard>
+      <ContinentalDashboardContent />
+    </AuthGuard>
   );
 }
