@@ -11,7 +11,8 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table"
+} from "@tantml:invoke>
+<invoke name="TanStack/react-table"
 import {
   ArrowUpDown,
   TrendingUp,
@@ -30,6 +31,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { CompanyProfileModal } from "./CompanyProfileModal"
 import { GatedColumn } from "@/components/gated/GatedColumn"
+import { TelegramCTA } from "@/components/TelegramCTA"
 import CountryFlag from "./CountryFlag"
 import { getCountryByCode } from "@/lib/americasMapData"
 
@@ -60,9 +62,10 @@ interface SignalTableProps {
   data: Company[]
   isPremium: boolean
   onUpgrade: () => void
+  isTelegramUser?: boolean
 }
 
-export function SignalTable({ data, isPremium, onUpgrade }: SignalTableProps) {
+export function SignalTable({ data, isPremium, onUpgrade, isTelegramUser = false }: SignalTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([
     { id: "pulse_score", desc: true }
   ])
@@ -374,27 +377,21 @@ export function SignalTable({ data, isPremium, onUpgrade }: SignalTableProps) {
         
         return (
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                if (isLocked) {
-                  onUpgrade()
-                } else {
-                  setSelectedCompany(company)
-                }
-              }}
-              className="hover:bg-accent"
-            >
-              {isLocked ? (
-                <>
-                  <Lock className="w-4 h-4 mr-1" />
-                  Unlock
-                </>
-              ) : (
-                <>
-                  View Details
-                  <ExternalLink className="w-4 h-4 ml-1" />
+            {isLocked ? (
+              <TelegramCTA
+                onClick={onUpgrade}
+                isPremium={isPremium}
+                className="text-sm"
+              />
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedCompany(company)}
+                className="hover:bg-accent"
+              >
+                View Details
+                <ExternalLink className="w-4 h-4 ml-1" />
                 </>
               )}
             </Button>

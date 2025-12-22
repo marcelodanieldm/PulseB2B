@@ -10,6 +10,9 @@ import { UnlockPremiumModal } from '@/components/UnlockPremiumModal';
 import { AuthGuard } from '@/components/auth/LoginModal';
 import { useAuth } from '@/hooks/useAuth';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
+import { useTelegramReferral, useIsMobile } from '@/hooks/useTelegramReferral';
+import { ToastContainer, showTelegramWelcome } from '@/components/Toast';
+import { TelegramConversionBanner, TelegramStickyMobileCTA } from '@/components/TelegramCTA';
 import { Activity, Globe, TrendingUp, DollarSign, Users, Zap, Crown, Sparkles } from 'lucide-react';
 
 function ContinentalDashboardContent() {
@@ -28,6 +31,22 @@ function ContinentalDashboardContent() {
   // Authentication and premium status
   const { user, isAuthenticated } = useAuth();
   const { isPremium, loading: premiumLoading } = usePremiumStatus();
+
+  // Telegram referral detection
+  const { isTelegramUser, campaign, hasShownWelcome, markWelcomeShown, trackConversion } = useTelegramReferral();
+  const isMobile = useIsMobile();
+
+  // Show welcome toast for Telegram users
+  useEffect(() => {
+    if (isTelegramUser && !hasShownWelcome) {
+      // Delay to ensure page is loaded
+      const timer = setTimeout(() => {
+        showTelegramWelcome(campaign);
+        markWelcomeShown();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isTelegramUser, hasShownWelcome, campaign, markWelcomeShown]);
 
   // Stripe payment link - replace with your actual link
   const STRIPE_PAYMENT_LINK = process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK || 'https://buy.stripe.com/your_link_here';
@@ -166,48 +185,51 @@ function ContinentalDashboardContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0E1A]">
+    <div className="min-h-screen bg-[#0A0E1A] pb-24 md:pb-8">
+      {/* Toast container for notifications */}
+      <ToastContainer />
+
       {/* Global Signal Ticker */}
       <GlobalSignalTicker />
 
       {/* Header */}
       <div className="border-b border-gray-800 bg-gradient-to-b from-gray-950 to-transparent">
-        <div className="container mx-auto px-6 py-6">
+        <div className="container mx-auto px-4 md:px-6 py-4 md:py-6">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center justify-between"
+            className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
           >
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <Globe className="w-8 h-8 text-blue-500" />
-                <h1 className="text-3xl font-bold text-white">
+            <div className="w-full md:w-auto">
+              <div className="flex items-center gap-2 md:gap-3 mb-2">
+                <Globe className="w-6 h-6 md:w-8 md:h-8 text-blue-500" />
+                <h1 className="text-xl md:text-3xl font-bold text-white">
                   Continental Command Center
                 </h1>
                 {isPremium && (
-                  <span className="px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold rounded-full flex items-center gap-1.5">
+                  <span className="px-2 md:px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold rounded-full flex items-center gap-1.5">
                     <Crown className="w-3 h-3" />
                     PREMIUM
                   </span>
                 )}
               </div>
-              <p className="text-gray-400 text-sm">
-                Real-time intelligence from Canada to Argentina • 19 Countries • $0 Infrastructure Cost
+              <p className="text-gray-400 text-xs md:text-sm">
+                {isMobile ? '19 Countries • Real-time Intelligence' : 'Real-time intelligence from Canada to Argentina • 19 Countries • $0 Infrastructure Cost'}
               </p>
             </div>
             
-            {/* Quick stats */}
-            <div className="flex items-center gap-6">
+            {/* Quick stats - responsive */}
+            <div className="flex items-center gap-4 md:gap-6 w-full md:w-auto justify-between md:justify-end">
               <div className="text-center">
-                <p className="text-3xl font-bold text-white">{stats.totalLeads}</p>
+                <p className="text-xl md:text-3xl font-bold text-white">{stats.totalLeads}</p>
                 <p className="text-xs text-gray-500">Active Leads</p>
               </div>
               <div className="text-center">
-                <p className="text-3xl font-bold text-red-400">{stats.criticalLeads}</p>
+                <p className="text-xl md:text-3xl font-bold text-red-400">{stats.criticalLeads}</p>
                 <p className="text-xs text-gray-500">Critical</p>
               </div>
               <div className="text-center">
-                <p className="text-3xl font-bold text-blue-400">{stats.avgPulseScore}</p>
+                <p className="text-xl md:text-3xl font-bold text-blue-400">{stats.avgPulseScore}</p>
                 <p className="text-xs text-gray-500">Avg Score</p>
               </div>
             </div>
@@ -216,14 +238,19 @@ function ContinentalDashboardContent() {
       </div>
 
       {/* Main content */}
-      <div className="container mx-auto px-6 py-8">
-        <div className="grid grid-cols-12 gap-6">
-          {/* Left sidebar - Region selector */}
+      <div className="container mx-auto px-4 md:px-6 py-4 md:py-8">
+        {/* Telegram conversion banner */}
+        {isTelegramUser && !isPremium && (
+          <TelegramConversionBanner onUpgrade={handleUpgradeClick} />
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6">
+          {/* Left sidebar - Region selector - hidden on mobile */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
-            className="col-span-3"
+            className="hidden md:block md:col-span-3"
           >
             <div className="bg-gray-950 border border-gray-800 rounded-xl p-6 sticky top-6">
               <RegionSelector
@@ -269,12 +296,12 @@ function ContinentalDashboardContent() {
             </div>
           </motion.div>
 
-          {/* Center - Heatmap */}
+          {/* Center - Heatmap - responsive */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="col-span-6"
+            className="col-span-1 md:col-span-9"
           >
             <div className="bg-gray-950 border border-gray-800 rounded-xl overflow-hidden">
               {/* Heatmap header */}
@@ -371,7 +398,7 @@ function ContinentalDashboardContent() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="mt-8"
+          className="mt-4 md:mt-6"
         >
           <div className="bg-gray-950 border border-gray-800 rounded-xl overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-800 bg-gray-900/50">
@@ -385,11 +412,20 @@ function ContinentalDashboardContent() {
             <SignalTable 
               data={tableData} 
               isPremium={isPremium} 
-              onUpgrade={() => setShowPremiumModal(true)} 
+              onUpgrade={handleUpgradeClick}
+              isTelegramUser={isTelegramUser}
             />
           </div>
         </motion.div>
       </div>
+
+      {/* Sticky mobile CTA for Telegram users */}
+      {isMobile && isTelegramUser && !isPremium && (
+        <TelegramStickyMobileCTA 
+          onClick={handleUpgradeClick}
+          isPremium={isPremium}
+        />
+      )}
 
       {/* Unlock Premium Modal */}
       <UnlockPremiumModal
