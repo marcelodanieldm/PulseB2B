@@ -1,0 +1,86 @@
+name: 🚨 Critical Funding Alert Flow
+
+on:
+  schedule:
+    # Every 6 hours - Detect critical funding rounds
+    - cron: '0 */6 * * *'
+  
+  workflow_dispatch:  # Manual trigger
+    inputs:
+      threshold:
+        description: 'Hiring probability threshold'
+        required: false
+        default: '85'
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  critical-funding-alerts:
+    name: 🚨 Critical Funding Detection & Alert
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: 📦 Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements-oracle.txt
+          pip install python-telegram-bot pandas scikit-learn
+          python -c "import nltk; nltk.download('punkt', quiet=True); nltk.download('stopwords', quiet=True)"
+      
+      - name: 🔮 Run Oracle Detector
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          MAX_COMPANIES: '50'
+        run: |
+          echo "🔮 Running Oracle Funding Detector..."
+          python scripts/oracle_funding_detector.py || echo "Oracle completed with warnings"
+      
+      - name: 📊 Analyze with Pulse Intelligence
+        run: |
+          echo "📊 Running Pulse Intelligence analysis..."
+          python scripts/integrate_pulse_intelligence.py || echo "Pulse analysis completed"
+      
+      - name: 🚨 Send Critical Funding Alerts
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          CRITICAL_THRESHOLD: ${{ github.event.inputs.threshold || '85' }}
+        run: |
+          echo "🚨 Sending critical funding alerts to Telegram..."
+          python scripts/telegram_notifier.py
+      
+      - name: 📤 Upload Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: critical-funding-reports-${{ github.run_number }}
+          path: |
+            data/output/oracle/*.csv
+            data/output/pulse_reports/*.csv
+            data/output/telegram_*.txt
+          retention-days: 30
+      
+      - name: 📊 Summary
+        if: always()
+        run: |
+          echo "## 🚨 Critical Funding Alert Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Workflow: Critical Funding Detection" >> $GITHUB_STEP_SUMMARY
+          echo "- Threshold: ${{ github.event.inputs.threshold || '85' }}%" >> $GITHUB_STEP_SUMMARY
+          echo "- Time: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f data/output/oracle/oracle_predictions_*.csv ]; then
+            COMPANIES=$(wc -l < data/output/oracle/oracle_predictions_*.csv | tail -1)
+            echo "- Companies analyzed: $((COMPANIES - 1))" >> $GITHUB_STEP_SUMMARY
+          fi

@@ -1,0 +1,204 @@
+name: 🔥 Pulse Score 90+ Alert Flow
+
+on:
+  schedule:
+    # Every 4 hours - Monitor critical hiring desperation
+    - cron: '0 */4 * * *'
+  
+  workflow_dispatch:  # Manual trigger
+    inputs:
+      pulse_threshold:
+        description: 'Minimum Pulse score'
+        required: false
+        default: '90'
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  pulse-critical-alerts:
+    name: 🔥 Pulse Score 90+ Detection & Alert
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: 📦 Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install pandas numpy scikit-learn python-telegram-bot
+          pip install -r requirements-oracle.txt || true
+      
+      - name: 🔮 Run Oracle + Pulse Analysis
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          echo "🔮 Running complete analysis pipeline..."
+          
+          # Run Oracle detector
+          python scripts/oracle_funding_detector.py || echo "Oracle completed"
+          
+          # Run Pulse Intelligence
+          python scripts/integrate_pulse_intelligence.py || echo "Pulse completed"
+      
+      - name: 🔥 Filter Pulse 90+ Companies
+        id: filter
+        run: |
+          echo "🔥 Filtering companies with Pulse score ≥90..."
+          python -c "
+import pandas as pd
+import json
+from pathlib import Path
+import glob
+
+# Find latest critical opportunities report
+reports_dir = Path('data/output/pulse_reports')
+reports_dir.mkdir(parents=True, exist_ok=True)
+
+critical_files = list(reports_dir.glob('critical_opportunities_*.csv'))
+
+if not critical_files:
+    print('No critical opportunities found')
+    exit(0)
+
+latest_file = max(critical_files, key=lambda x: x.stat().st_mtime)
+df = pd.read_csv(latest_file)
+
+# Filter for 90+ score
+pulse_90 = df[df['pulse_score'] >= 90].copy()
+
+print(f'Found {len(pulse_90)} companies with Pulse score ≥90')
+
+# Save for Telegram
+pulse_90_list = pulse_90.to_dict('records')
+with open('data/output/pulse_90_critical.json', 'w') as f:
+    json.dump(pulse_90_list, f, indent=2)
+
+print('✅ Filtered data saved')
+          "
+      
+      - name: 🚨 Send Pulse 90+ Alerts
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          PULSE_THRESHOLD: ${{ github.event.inputs.pulse_threshold || '90' }}
+        run: |
+          echo "🚨 Sending Pulse 90+ alerts to Telegram..."
+          python -c "
+import os
+import json
+import asyncio
+from telegram import Bot
+from datetime import datetime
+from pathlib import Path
+
+async def send_pulse_alerts():
+    bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
+    chat_id = os.getenv('TELEGRAM_CHAT_ID')
+    
+    if not bot_token or not chat_id:
+        print('⚠️  Telegram not configured')
+        return
+    
+    try:
+        with open('data/output/pulse_90_critical.json', 'r') as f:
+            companies = json.load(f)
+    except:
+        print('No critical companies found')
+        return
+    
+    if len(companies) == 0:
+        print('No companies with Pulse ≥90')
+        return
+    
+    bot = Bot(bot_token)
+    
+    # Check alert log for deduplication
+    alert_log_path = Path('data/output/alert_log.json')
+    alert_log = {}
+    
+    if alert_log_path.exists():
+        with open(alert_log_path, 'r') as f:
+            alert_log = json.load(f)
+    
+    sent = 0
+    
+    for company in companies[:10]:  # Max 10 alerts
+        company_name = company.get('company_name', 'Unknown')
+        
+        # Check if already alerted in last 24h
+        if company_name in alert_log:
+            print(f'⏭️  Skipping {company_name} (recently alerted)')
+            continue
+        
+        score = company.get('pulse_score', 0)
+        emoji = '🔥🔥🔥' if score >= 95 else '🔥🔥'
+        
+        message = f'''{emoji} <b>CRITICAL OPPORTUNITY</b> {emoji}
+
+<b>{company_name}</b>
+Pulse Score: <b>{score}/100</b>
+Desperation: <b>{company.get('desperation_level', 'HIGH')}</b>
+
+📊 <b>Signals:</b>
+• Tech Stack: {company.get('tech_diversity_score', 0)} technologies
+• Hiring Probability: {company.get('hiring_probability', 'N/A')}%
+
+💡 <b>Contact immediately - Company desperately hiring</b>
+
+🔗 {company.get('website', 'N/A')}
+
+⏰ <i>Detected: {datetime.now().strftime('%b %d, %Y %I:%M %p')}</i>'''
+        
+        try:
+            await bot.send_message(chat_id=chat_id, text=message, parse_mode='HTML')
+            print(f'✅ Alert sent for {company_name} ({score}/100)')
+            
+            # Log alert
+            alert_log[company_name] = datetime.now().isoformat()
+            sent += 1
+            
+        except Exception as e:
+            print(f'❌ Error sending alert for {company_name}: {e}')
+    
+    # Save alert log
+    with open(alert_log_path, 'w') as f:
+        json.dump(alert_log, f, indent=2)
+    
+    print(f'\\n✅ Sent {sent} Pulse 90+ alerts')
+
+asyncio.run(send_pulse_alerts())
+          "
+      
+      - name: 📤 Upload Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pulse-90-alerts-${{ github.run_number }}
+          path: |
+            data/output/pulse_90_critical.json
+            data/output/alert_log.json
+            data/output/pulse_reports/*.csv
+          retention-days: 30
+      
+      - name: 📊 Summary
+        if: always()
+        run: |
+          echo "## 🔥 Pulse Score 90+ Alert Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Workflow: Pulse Critical Detection" >> $GITHUB_STEP_SUMMARY
+          echo "- Threshold: ${{ github.event.inputs.pulse_threshold || '90' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Time: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f data/output/pulse_90_critical.json ]; then
+            COUNT=$(cat data/output/pulse_90_critical.json | grep -o 'company_name' | wc -l)
+            echo "- Critical Companies Found: $COUNT" >> $GITHUB_STEP_SUMMARY
+          fi

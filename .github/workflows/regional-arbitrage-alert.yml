@@ -1,0 +1,149 @@
+name: 🌎 Regional Arbitrage Alert Flow
+
+on:
+  schedule:
+    # Every 8 hours - Monitor regional expansion
+    - cron: '0 */8 * * *'
+  
+  workflow_dispatch:  # Manual trigger
+    inputs:
+      min_score:
+        description: 'Minimum arbitrage score'
+        required: false
+        default: '60'
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  regional-arbitrage-alerts:
+    name: 🌎 Regional Expansion Detection & Alert
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: 📦 Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install pandas numpy scikit-learn spacy python-telegram-bot
+          python -c "import nltk; nltk.download('punkt', quiet=True); nltk.download('averaged_perceptron_tagger', quiet=True); nltk.download('maxent_ne_chunker', quiet=True); nltk.download('words', quiet=True)"
+      
+      - name: 🌎 Detect Regional Expansion
+        id: regional
+        run: |
+          echo "🌎 Running Regional NLP Recognition..."
+          python -c "
+import sys
+sys.path.insert(0, 'scripts')
+from regional_nlp_recognizer import RegionalEntityRecognizer
+import json
+
+recognizer = RegionalEntityRecognizer()
+
+# Sample companies to analyze
+test_cases = [
+    {
+        'name': 'Tech Corp',
+        'text': 'Company expanding to Mexico City and São Paulo. Opening offices in Latin America with $50M funding.'
+    },
+    {
+        'name': 'Global Startup',
+        'text': 'Scaling operations across Argentina, Chile, and Colombia. Hiring 100+ engineers in LATAM.'
+    }
+]
+
+critical_opportunities = []
+
+for case in test_cases:
+    analysis = recognizer.analyze_text(case['text'], case['name'])
+    if analysis.get('is_critical_opportunity', False):
+        critical_opportunities.append({
+            'company': case['name'],
+            'score': analysis.get('critical_hiring_score', 0),
+            'regions': analysis.get('latam_countries', []),
+            'signals': len(analysis.get('expansion_signals', []))
+        })
+
+# Save results
+with open('data/output/regional_critical.json', 'w') as f:
+    json.dump(critical_opportunities, f, indent=2)
+
+print(f'Found {len(critical_opportunities)} critical opportunities')
+          "
+      
+      - name: 🚨 Send Regional Alerts
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          echo "🚨 Sending regional arbitrage alerts..."
+          python -c "
+import os
+import json
+import asyncio
+from telegram import Bot
+
+async def send_alerts():
+    bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
+    chat_id = os.getenv('TELEGRAM_CHAT_ID')
+    
+    if not bot_token or not chat_id:
+        print('⚠️  Telegram not configured')
+        return
+    
+    try:
+        with open('data/output/regional_critical.json', 'r') as f:
+            opportunities = json.load(f)
+    except:
+        print('No critical opportunities found')
+        return
+    
+    bot = Bot(bot_token)
+    
+    for opp in opportunities[:5]:  # Max 5 alerts
+        message = f'''🌎 <b>REGIONAL ARBITRAGE ALERT</b>
+
+<b>{opp['company']}</b>
+
+📊 <b>Arbitrage Score:</b> {opp['score']}/100
+📍 <b>Target Regions:</b> {', '.join(opp['regions'])}
+🎯 <b>Signals Detected:</b> {opp['signals']}
+
+<b>⚡ IMMEDIATE ACTION:</b>
+• Contact within 24 hours
+• Pitch LATAM hiring expertise
+• Reference expansion to {', '.join(opp['regions'][:2])}
+• Highlight 60-70% cost savings'''
+        
+        await bot.send_message(chat_id=chat_id, text=message, parse_mode='HTML')
+        print(f'✅ Alert sent for {opp['company']}')
+
+asyncio.run(send_alerts())
+          "
+      
+      - name: 📤 Upload Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: regional-alerts-${{ github.run_number }}
+          path: |
+            data/output/regional_*.json
+            data/output/regional_*.csv
+          retention-days: 30
+      
+      - name: 📊 Summary
+        if: always()
+        run: |
+          echo "## 🌎 Regional Arbitrage Alert Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Workflow: Regional Expansion Detection" >> $GITHUB_STEP_SUMMARY
+          echo "- Min Score: ${{ github.event.inputs.min_score || '60' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Time: $(date)" >> $GITHUB_STEP_SUMMARY

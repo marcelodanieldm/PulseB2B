@@ -1,0 +1,244 @@
+name: 📅 Weekly Digest Flow
+
+on:
+  schedule:
+    # Every Monday at 9:00 AM UTC
+    - cron: '0 9 * * 1'
+  
+  workflow_dispatch:  # Manual trigger
+    inputs:
+      top_count:
+        description: 'Number of top opportunities'
+        required: false
+        default: '10'
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  weekly-digest:
+    name: 📅 Weekly Opportunities Digest
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: 📦 Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install pandas numpy python-telegram-bot
+      
+      - name: 📊 Generate Weekly Statistics
+        id: stats
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          echo "📊 Generating weekly statistics..."
+          python -c "
+import pandas as pd
+import json
+from pathlib import Path
+from datetime import datetime, timedelta
+import glob
+
+def collect_weekly_stats():
+    stats = {
+        'week': datetime.now().strftime('%Y-W%W'),
+        'generated_at': datetime.now().isoformat(),
+        'total_companies_analyzed': 0,
+        'critical_alerts_sent': 0,
+        'funding_alerts': 0,
+        'regional_alerts': 0,
+        'high_value_leads': 0,
+        'pulse_90_alerts': 0,
+        'avg_pulse_score': 0,
+        'top_companies': []
+    }
+    
+    # Collect from various sources
+    output_dir = Path('data/output')
+    
+    # Count Oracle predictions
+    oracle_files = list(output_dir.glob('oracle/oracle_predictions_*.csv'))
+    if oracle_files:
+        latest_oracle = max(oracle_files, key=lambda x: x.stat().st_mtime)
+        df = pd.read_csv(latest_oracle)
+        stats['total_companies_analyzed'] = len(df)
+        
+        # Count funding alerts (≥85% probability)
+        if 'Hiring Probability (%)' in df.columns:
+            stats['funding_alerts'] = len(df[df['Hiring Probability (%)'] >= 85])
+    
+    # Count Pulse reports
+    pulse_dir = output_dir / 'pulse_reports'
+    if pulse_dir.exists():
+        critical_files = list(pulse_dir.glob('critical_opportunities_*.csv'))
+        if critical_files:
+            latest_pulse = max(critical_files, key=lambda x: x.stat().st_mtime)
+            df_pulse = pd.read_csv(latest_pulse)
+            
+            if 'pulse_score' in df_pulse.columns:
+                stats['avg_pulse_score'] = round(df_pulse['pulse_score'].mean(), 1)
+                stats['pulse_90_alerts'] = len(df_pulse[df_pulse['pulse_score'] >= 90])
+                
+                # Get top companies
+                top_companies = df_pulse.nlargest(10, 'pulse_score')
+                stats['top_companies'] = [
+                    {
+                        'name': row.get('company_name', 'Unknown'),
+                        'score': int(row.get('pulse_score', 0)),
+                        'type': 'Pulse Intelligence'
+                    }
+                    for _, row in top_companies.iterrows()
+                ]
+    
+    # Count regional alerts
+    regional_files = list(output_dir.glob('regional_critical.json'))
+    if regional_files:
+        with open(regional_files[0], 'r') as f:
+            regional_data = json.load(f)
+            stats['regional_alerts'] = len(regional_data)
+    
+    # Count high-value leads
+    lead_files = list(output_dir.glob('high_value_leads.json'))
+    if lead_files:
+        with open(lead_files[0], 'r') as f:
+            lead_data = json.load(f)
+            stats['high_value_leads'] = len(lead_data)
+    
+    # Total critical alerts
+    stats['critical_alerts_sent'] = (
+        stats['funding_alerts'] + 
+        stats['regional_alerts'] + 
+        stats['high_value_leads'] +
+        stats['pulse_90_alerts']
+    )
+    
+    # Save stats
+    with open('data/output/weekly_stats.json', 'w') as f:
+        json.dump(stats, f, indent=2)
+    
+    print(f'✅ Generated stats for week {stats['week']}')
+    print(f'   - Companies: {stats['total_companies_analyzed']}')
+    print(f'   - Critical Alerts: {stats['critical_alerts_sent']}')
+    print(f'   - Avg Pulse Score: {stats['avg_pulse_score']}')
+    
+    return stats
+
+collect_weekly_stats()
+          "
+      
+      - name: 📱 Send Weekly Digest
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TOP_COUNT: ${{ github.event.inputs.top_count || '10' }}
+        run: |
+          echo "📱 Sending weekly digest to Telegram..."
+          python -c "
+import os
+import json
+import asyncio
+from telegram import Bot
+from datetime import datetime
+
+async def send_weekly_digest():
+    bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
+    chat_id = os.getenv('TELEGRAM_CHAT_ID')
+    
+    if not bot_token or not chat_id:
+        print('⚠️  Telegram not configured')
+        return
+    
+    try:
+        with open('data/output/weekly_stats.json', 'r') as f:
+            stats = json.load(f)
+    except:
+        print('❌ No stats available')
+        return
+    
+    bot = Bot(bot_token)
+    
+    # Build top companies list
+    top_list = ''
+    for i, co in enumerate(stats['top_companies'][:10], 1):
+        top_list += f\"   {i}. <b>{co['name']}</b> - {co['score']}/100 ({co['type']})\\n\"
+    
+    if not top_list:
+        top_list = '   <i>No critical opportunities this week</i>\\n'
+    
+    message = f'''📅 <b>WEEKLY DIGEST - PulseB2B</b>
+
+<b>Week of {datetime.now().strftime('%B %d, %Y')}</b>
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 <b>SUMMARY:</b>
+• Total Companies: {stats['total_companies_analyzed']}
+• Critical Alerts: {stats['critical_alerts_sent']}
+• Avg Pulse Score: {stats['avg_pulse_score']}/100
+
+📈 <b>ALERT BREAKDOWN:</b>
+• 💰 Funding Rounds: {stats['funding_alerts']}
+• 🌎 Regional Expansion: {stats['regional_alerts']}
+• 🎯 High-Value Leads: {stats['high_value_leads']}
+• 🔥 Pulse 90+ Scores: {stats['pulse_90_alerts']}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔥 <b>TOP OPPORTUNITIES:</b>
+
+{top_list}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 <i>Sistema automatizado de detección de oportunidades
+Actualizado cada 12 horas via GitHub Actions</i>
+
+📊 <i>Next digest: {(datetime.now()).strftime('%B %d, %Y')}</i>'''
+    
+    try:
+        await bot.send_message(chat_id=chat_id, text=message, parse_mode='HTML')
+        print('✅ Weekly digest sent successfully')
+    except Exception as e:
+        print(f'❌ Error sending digest: {e}')
+
+asyncio.run(send_weekly_digest())
+          "
+      
+      - name: 📤 Upload Weekly Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-digest-${{ github.run_number }}
+          path: |
+            data/output/weekly_stats.json
+          retention-days: 90
+      
+      - name: 📊 Summary
+        if: always()
+        run: |
+          echo "## 📅 Weekly Digest Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Week: $(date +%Y-W%W)" >> $GITHUB_STEP_SUMMARY
+          echo "- Generated: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f data/output/weekly_stats.json ]; then
+            echo "### Statistics" >> $GITHUB_STEP_SUMMARY
+            python -c "
+import json
+with open('data/output/weekly_stats.json', 'r') as f:
+    stats = json.load(f)
+print(f\"- Total Companies: {stats['total_companies_analyzed']}\")
+print(f\"- Critical Alerts: {stats['critical_alerts_sent']}\")
+print(f\"- Avg Pulse Score: {stats['avg_pulse_score']}/100\")
+            "
+          fi

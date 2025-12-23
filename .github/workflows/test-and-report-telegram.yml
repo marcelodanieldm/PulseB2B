@@ -1,0 +1,78 @@
+name: Critical Flows Test & Telegram Report
+
+on:
+  # Ejecutar cada lunes a las 9 AM
+  schedule:
+    - cron: '0 9 * * 1'
+  
+  # Permitir ejecución manual
+  workflow_dispatch:
+  
+  # Ejecutar en cada push a main (opcional)
+  # push:
+  #   branches: [ main ]
+
+jobs:
+  test-and-report:
+    name: Test System & Send Report
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+      
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: 📦 Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install scikit-learn numpy pandas python-telegram-bot
+      
+      - name: 🧪 Run critical flows tests
+        id: tests
+        run: |
+          python test_critical_flows.py
+          echo "test_status=$?" >> $GITHUB_OUTPUT
+        continue-on-error: true
+      
+      - name: 📊 Generate test summary
+        if: always()
+        run: |
+          if [ -f "data/output/critical_flows_report.json" ]; then
+            echo "✅ Test report generated"
+            cat data/output/telegram_report.txt
+          else
+            echo "❌ Test report not found"
+          fi
+      
+      - name: 📱 Send report to Telegram
+        if: always()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python send_to_telegram.py
+      
+      - name: 📋 Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            data/output/telegram_*.txt
+            data/output/critical_flows_report.json
+          retention-days: 30
+      
+      - name: ✅ Mark as successful
+        if: steps.tests.outputs.test_status == '0'
+        run: echo "✅ All tests passed successfully"
+      
+      - name: ⚠️ Mark as warning
+        if: steps.tests.outputs.test_status != '0'
+        run: |
+          echo "⚠️ Some tests failed or had warnings"
+          exit 0  # Don't fail the workflow

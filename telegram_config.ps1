@@ -1,0 +1,3 @@
+# Telegram Bot Configuration - PulseB2B 
+$env:TELEGRAM_BOT_TOKEN="7901617653:AAFlfhbhWw8m4RQH-JP-0OjTvv2Di8n91Oo" 
+$env:TELEGRAM_CHAT_ID="1021613765" 

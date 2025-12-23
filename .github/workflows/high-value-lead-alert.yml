@@ -1,0 +1,145 @@
+name: 🎯 High-Value Lead Alert Flow
+
+on:
+  schedule:
+    # Every hour during business hours (9 AM - 6 PM UTC)
+    - cron: '0 9-18 * * *'
+  
+  workflow_dispatch:  # Manual trigger
+    inputs:
+      score_threshold:
+        description: 'Priority score threshold'
+        required: false
+        default: '250'
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  high-value-lead-alerts:
+    name: 🎯 High-Value Lead Detection & Alert
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'backend/package.json'
+      
+      - name: 📥 Install dependencies
+        working-directory: backend
+        run: npm ci
+      
+      - name: 🎯 Check for High-Value Leads
+        id: check_leads
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CLEARBIT_API_KEY: ${{ secrets.CLEARBIT_API_KEY }}
+          SCORE_THRESHOLD: ${{ github.event.inputs.score_threshold || '250' }}
+        working-directory: backend
+        run: |
+          echo "🎯 Checking for high-value leads..."
+          node -e "
+          const { SupabaseService } = require('./dist/supabase-service.js');
+          const supabase = new SupabaseService();
+          
+          async function checkLeads() {
+            try {
+              const threshold = parseInt(process.env.SCORE_THRESHOLD || '250');
+              const leads = await supabase.getTopLeads(threshold);
+              
+              console.log(\`Found \${leads.length} high-value leads\`);
+              
+              // Save for next step
+              const fs = require('fs');
+              fs.writeFileSync('../data/output/high_value_leads.json', JSON.stringify(leads, null, 2));
+              
+              return leads.length;
+            } catch (error) {
+              console.error('Error:', error);
+              return 0;
+            }
+          }
+          
+          checkLeads().then(count => {
+            console.log(\`✅ Found \${count} leads\`);
+            process.exit(0);
+          });
+          "
+      
+      - name: 🚨 Send High-Value Alerts
+        if: success()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          echo "🚨 Sending high-value lead alerts..."
+          node scripts/telegram_alert_service.js batch 5
+      
+      - name: 📊 Generate Lead Report
+        if: always()
+        run: |
+          echo "📊 Generating lead summary..."
+          python -c "
+import json
+import os
+from datetime import datetime
+
+try:
+    with open('data/output/high_value_leads.json', 'r') as f:
+        leads = json.load(f)
+    
+    report = f'''# High-Value Lead Report
+Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+## Summary
+- Total Leads: {len(leads)}
+- Threshold: {os.getenv('SCORE_THRESHOLD', '250')} points
+
+## Top Leads
+'''
+    
+    for i, lead in enumerate(leads[:10], 1):
+        report += f\"\"\"{i}. **{lead.get('company_name', 'Unknown')}**
+   - Score: {lead.get('priority_score', 0)} points
+   - Size: {lead.get('company_size', 'N/A')} employees
+   - Industry: {lead.get('industry', 'N/A')}
+
+\"\"\"
+    
+    with open('data/output/lead_report.md', 'w') as f:
+        f.write(report)
+    
+    print('✅ Report generated')
+except Exception as e:
+    print(f'⚠️  Error generating report: {e}')
+          "
+      
+      - name: 📤 Upload Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: high-value-leads-${{ github.run_number }}
+          path: |
+            data/output/high_value_leads.json
+            data/output/lead_report.md
+          retention-days: 30
+      
+      - name: 📊 Summary
+        if: always()
+        run: |
+          echo "## 🎯 High-Value Lead Alert Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Workflow: High-Value Lead Detection" >> $GITHUB_STEP_SUMMARY
+          echo "- Threshold: ${{ github.event.inputs.score_threshold || '250' }} points" >> $GITHUB_STEP_SUMMARY
+          echo "- Time: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f data/output/lead_report.md ]; then
+            cat data/output/lead_report.md >> $GITHUB_STEP_SUMMARY
+          fi
