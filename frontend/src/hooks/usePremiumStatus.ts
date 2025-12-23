@@ -1,8 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@supabase/supabase-js';
 import { useAuth } from './useAuth';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const DEV_MODE = process.env.NEXT_PUBLIC_DEV_MODE === 'true';
 
 /**
  * usePremiumStatus Hook
@@ -30,7 +34,6 @@ interface UsePremiumStatusReturn extends PremiumStatusState {
 
 export function usePremiumStatus(): UsePremiumStatusReturn {
   const { user, isAuthenticated } = useAuth();
-  const supabase = createClientComponentClient();
   
   const [state, setState] = useState<PremiumStatusState>({
     isPremium: false,
@@ -42,6 +45,16 @@ export function usePremiumStatus(): UsePremiumStatusReturn {
    * Check premium status from users table
    */
   const checkPremiumStatus = async () => {
+    // DEV MODE: Always premium
+    if (DEV_MODE) {
+      setState({
+        isPremium: true,
+        loading: false,
+        error: null,
+      });
+      return;
+    }
+    
     // Not authenticated = not premium
     if (!isAuthenticated || !user) {
       setState({
@@ -55,6 +68,7 @@ export function usePremiumStatus(): UsePremiumStatusReturn {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
 
+      const supabase = createClient(supabaseUrl, supabaseAnonKey);
       const { data, error } = await supabase
         .from('users')
         .select('is_premium, premium_until')

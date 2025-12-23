@@ -11,8 +11,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tantml:invoke>
-<invoke name="TanStack/react-table"
+} from "@tanstack/react-table"
 import {
   ArrowUpDown,
   TrendingUp,
@@ -392,9 +391,8 @@ export function SignalTable({ data, isPremium, onUpgrade, isTelegramUser = false
               >
                 View Details
                 <ExternalLink className="w-4 h-4 ml-1" />
-                </>
-              )}
-            </Button>
+              </Button>
+            )}
           </div>
         )
       },

@@ -2,6 +2,8 @@
  * Authentication and Premium Status Hook
  * Supports Google OAuth and Email/Password authentication
  * Checks Supabase auth and user's is_premium flag
+ * 
+ * DEV MODE: Set NEXT_PUBLIC_DEV_MODE=true to bypass authentication
  */
 
 import { useState, useEffect } from 'react';
@@ -9,6 +11,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const DEV_MODE = process.env.NEXT_PUBLIC_DEV_MODE === 'true';
 
 export interface AuthUser {
   id: string;
@@ -31,6 +34,15 @@ export interface UseAuthReturn {
   refreshAuth: () => Promise<void>;
 }
 
+// Mock user for development mode
+const DEV_USER: AuthUser = {
+  id: 'dev-user-123',
+  email: 'dev@pulseb2b.com',
+  isPremium: true,
+  firstName: 'Developer',
+  lastName: 'Mode',
+};
+
 export function useAuth(): UseAuthReturn {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -39,6 +51,15 @@ export function useAuth(): UseAuthReturn {
   const checkAuth = async () => {
     try {
       setError(null);
+      
+      // DEV MODE: Bypass authentication
+      if (DEV_MODE) {
+        console.log('🔧 DEV MODE: Authentication bypassed');
+        setUser(DEV_USER);
+        setIsLoading(false);
+        return;
+      }
+      
       const supabase = createClient(supabaseUrl, supabaseAnonKey);
       
       // Get current session
@@ -92,6 +113,15 @@ export function useAuth(): UseAuthReturn {
     try {
       setError(null);
       setIsLoading(true);
+      
+      // DEV MODE: Auto sign in
+      if (DEV_MODE) {
+        console.log('🔧 DEV MODE: Auto sign in');
+        setUser(DEV_USER);
+        setIsLoading(false);
+        return;
+      }
+      
       const supabase = createClient(supabaseUrl, supabaseAnonKey);
       
       const { error } = await supabase.auth.signInWithPassword({
@@ -117,6 +147,15 @@ export function useAuth(): UseAuthReturn {
     try {
       setError(null);
       setIsLoading(true);
+      
+      // DEV MODE: Auto sign up
+      if (DEV_MODE) {
+        console.log('🔧 DEV MODE: Auto sign up');
+        setUser(DEV_USER);
+        setIsLoading(false);
+        return;
+      }
+      
       const supabase = createClient(supabaseUrl, supabaseAnonKey);
       
       const { error } = await supabase.auth.signUp({
@@ -145,6 +184,14 @@ export function useAuth(): UseAuthReturn {
   const signInWithGoogle = async () => {
     try {
       setError(null);
+      
+      // DEV MODE: Auto sign in
+      if (DEV_MODE) {
+        console.log('🔧 DEV MODE: Google sign in bypassed');
+        setUser(DEV_USER);
+        return;
+      }
+      
       const supabase = createClient(supabaseUrl, supabaseAnonKey);
       
       const { error } = await supabase.auth.signInWithOAuth({
@@ -171,6 +218,14 @@ export function useAuth(): UseAuthReturn {
   const signOut = async () => {
     try {
       setError(null);
+      
+      // DEV MODE: Just clear user
+      if (DEV_MODE) {
+        console.log('🔧 DEV MODE: Sign out');
+        setUser(null);
+        return;
+      }
+      
       const supabase = createClient(supabaseUrl, supabaseAnonKey);
       await supabase.auth.signOut();
       setUser(null);
