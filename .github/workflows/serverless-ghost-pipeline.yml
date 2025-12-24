@@ -51,7 +51,7 @@ jobs:
           python src/ghost_sec_rss_scraper.py
       
       - name: Upload SEC scraping results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: sec-scraping-results
@@ -89,7 +89,7 @@ jobs:
           python src/ghost_linkedin_google_scraper.py
       
       - name: Upload LinkedIn scraping results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: linkedin-scraping-results
@@ -130,7 +130,7 @@ jobs:
           python src/ghost_osint_pipeline.py
       
       - name: Upload OSINT results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: osint-results
@@ -166,7 +166,7 @@ jobs:
           python scripts/run_predictions.py
       
       - name: Upload news analysis results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: news-intelligence-results
@@ -194,7 +194,7 @@ jobs:
           pip install requests python-dotenv
       
       - name: Download all artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: artifacts/
       
