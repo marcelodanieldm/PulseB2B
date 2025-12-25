@@ -135,47 +135,92 @@ class OracleFundingDetector:
         
         logger.info(f"🔮 Oracle Funding Detector initialized (Google Cache: {use_google_cache})")
     
-    def fetch_sec_filings(self, feed_type: str = 'recent', max_items: int = 50) -> List[Dict]:
+    def fetch_sec_filings(self, feed_type: str = 'recent', max_items: int = 50, max_retries: int = 3, retry_delay: int = 60) -> List[Dict]:
         """
-        Fetch recent Form D filings from SEC EDGAR RSS feed.
+        Fetch recent Form D filings from SEC EDGAR RSS feed with retry logic.
         
         Args:
             feed_type: Type of feed ('recent' or 'daily')
             max_items: Maximum number of filings to fetch
+            max_retries: Maximum number of retry attempts
+            retry_delay: Delay between retries in seconds
             
         Returns:
             List of filing dictionaries with company info
         """
         logger.info(f"📥 Fetching SEC Form D filings ({feed_type})...")
         
-        try:
-            feed_url = self.SEC_RSS_FEEDS.get(feed_type, self.SEC_RSS_FEEDS['recent'])
-            
-            # Parse RSS feed
-            feed = feedparser.parse(feed_url)
-            
-            filings = []
-            for entry in feed.entries[:max_items]:
-                filing = {
-                    'company_name': entry.get('title', 'Unknown'),
-                    'filing_date': entry.get('updated', ''),
-                    'filing_url': entry.get('link', ''),
-                    'summary': entry.get('summary', ''),
-                    'cik': self._extract_cik(entry.get('link', ''))
-                }
+        for attempt in range(max_retries):
+            try:
+                feed_url = self.SEC_RSS_FEEDS.get(feed_type, self.SEC_RSS_FEEDS['recent'])
+                logger.info(f"   Attempt {attempt + 1}/{max_retries}: {feed_url}")
                 
-                # Clean company name (remove form type)
-                filing['company_name'] = re.sub(r'\s*-\s*Form D.*$', '', filing['company_name']).strip()
+                # Parse RSS feed
+                feed = feedparser.parse(feed_url)
                 
-                filings.append(filing)
-                logger.info(f"  ✓ Found: {filing['company_name']}")
-            
-            logger.info(f"✅ Fetched {len(filings)} Form D filings")
-            return filings
-            
-        except Exception as e:
-            logger.error(f"❌ Error fetching SEC filings: {e}")
-            return []
+                # Check for feed errors
+                if hasattr(feed, 'bozo') and feed.bozo:
+                    logger.warning(f"⚠️ Feed parsing issue: {getattr(feed, 'bozo_exception', 'Unknown error')}")
+                
+                # Check if feed has entries
+                if not hasattr(feed, 'entries') or len(feed.entries) == 0:
+                    logger.warning(f"⚠️ No entries found in feed (Attempt {attempt + 1}/{max_retries})")
+                    
+                    if attempt < max_retries - 1:
+                        logger.info(f"   Retrying in {retry_delay} seconds...")
+                        time.sleep(retry_delay)
+                        continue
+                    else:
+                        logger.error(f"❌ No entries found after {max_retries} attempts")
+                        logger.error(f"   Feed status: {getattr(feed, 'status', 'unknown')}")
+                        logger.error(f"   Feed info: {getattr(feed.feed, 'title', 'No title')}")
+                        return []
+                
+                filings = []
+                for entry in feed.entries[:max_items]:
+                    filing = {
+                        'company_name': entry.get('title', 'Unknown'),
+                        'filing_date': entry.get('updated', ''),
+                        'filing_url': entry.get('link', ''),
+                        'summary': entry.get('summary', ''),
+                        'cik': self._extract_cik(entry.get('link', ''))
+                    }
+                    
+                    # Clean company name (remove form type)
+                    filing['company_name'] = re.sub(r'\s*-\s*Form D.*$', '', filing['company_name']).strip()
+                    
+                    filings.append(filing)
+                    logger.info(f"  ✓ Found: {filing['company_name']}")
+                
+                if len(filings) > 0:
+                    logger.info(f"✅ Fetched {len(filings)} Form D filings")
+                    return filings
+                else:
+                    logger.warning(f"⚠️ Feed parsed but no valid filings extracted (Attempt {attempt + 1}/{max_retries})")
+                    if attempt < max_retries - 1:
+                        logger.info(f"   Retrying in {retry_delay} seconds...")
+                        time.sleep(retry_delay)
+                
+            except requests.exceptions.RequestException as e:
+                logger.error(f"❌ Network error fetching SEC filings (Attempt {attempt + 1}/{max_retries}): {e}")
+                if attempt < max_retries - 1:
+                    logger.info(f"   Retrying in {retry_delay} seconds...")
+                    time.sleep(retry_delay)
+                else:
+                    logger.error(f"❌ Failed after {max_retries} network error attempts")
+                    return []
+                    
+            except Exception as e:
+                logger.error(f"❌ Unexpected error fetching SEC filings (Attempt {attempt + 1}/{max_retries}): {type(e).__name__}: {e}")
+                if attempt < max_retries - 1:
+                    logger.info(f"   Retrying in {retry_delay} seconds...")
+                    time.sleep(retry_delay)
+                else:
+                    logger.error(f"❌ Failed after {max_retries} attempts")
+                    return []
+        
+        logger.error("❌ All retry attempts exhausted")
+        return []
     
     def _extract_cik(self, url: str) -> str:
         """Extract CIK number from SEC filing URL."""
@@ -606,26 +651,92 @@ def main():
     # Initialize Oracle
     oracle = OracleFundingDetector()
     
-    # Fetch SEC filings
-    filings = oracle.fetch_sec_filings(feed_type='recent', max_items=20)
+    # Get max companies from environment variable (default 20)
+    max_companies = int(os.environ.get('MAX_COMPANIES', 20))
+    logger.info(f"🎯 Target: {max_companies} companies")
+    
+    # Fetch SEC filings with retry logic
+    logger.info("🔄 Attempting to fetch SEC filings with retry logic...")
+    filings = oracle.fetch_sec_filings(
+        feed_type='recent', 
+        max_items=max_companies,
+        max_retries=3,
+        retry_delay=60
+    )
     
     if not filings:
-        logger.error("❌ No filings found. Exiting.")
+        logger.error("❌ No filings found after all retry attempts.")
+        logger.error("📋 Possible reasons:")
+        logger.error("   1. SEC EDGAR RSS feed is temporarily unavailable")
+        logger.error("   2. Network connectivity issues")
+        logger.error("   3. SEC website maintenance or rate limiting")
+        logger.error("   4. No new Form D filings in the current period")
+        logger.error("")
+        logger.error("💡 Recommendations:")
+        logger.error("   - Check SEC EDGAR status: https://www.sec.gov/edgar/search-and-access")
+        logger.error("   - Verify network connectivity")
+        logger.error("   - Try again in 30-60 minutes")
+        logger.error("   - Check if IP is rate-limited by SEC")
+        
+        # Create empty results file to indicate run completed but no data
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        empty_result = {
+            'status': 'no_data',
+            'message': 'No SEC Form D filings found',
+            'timestamp': timestamp,
+            'attempts': 3
+        }
+        
+        output_dir = '../data/output/oracle'
+        os.makedirs(output_dir, exist_ok=True)
+        status_file = os.path.join(output_dir, f'oracle_status_{timestamp}.json')
+        
+        with open(status_file, 'w') as f:
+            json.dump(empty_result, f, indent=2)
+        
+        logger.info(f"📄 Status file created: {status_file}")
+        logger.warning("⚠️ Exiting without data - This is a soft failure")
+        
+        # Exit with code 0 (success) since this is not a script error
+        # but a data availability issue
         return
     
+    logger.info(f"✅ Successfully fetched {len(filings)} filings")
+    
     # Process filings with enrichment
-    results_df = oracle.process_filings(filings)
+    try:
+        results_df = oracle.process_filings(filings)
+        
+        if results_df.empty:
+            logger.warning("⚠️ Processing completed but no valid results")
+            return
+        
+    except Exception as e:
+        logger.error(f"❌ Error processing filings: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return
     
     # Export to CSV
-    output_file = oracle.export_results(results_df)
+    try:
+        output_file = oracle.export_results(results_df)
+        logger.info(f"✅ Results exported: {output_file}")
+    except Exception as e:
+        logger.error(f"❌ Error exporting results: {e}")
+        return
     
     # Generate summary
-    summary = oracle.generate_summary_report(results_df)
-    
-    # Save summary as JSON
-    summary_file = output_file.replace('.csv', '_summary.json')
-    with open(summary_file, 'w') as f:
-        json.dump(summary, f, indent=2)
+    try:
+        summary = oracle.generate_summary_report(results_df)
+        
+        # Save summary as JSON
+        summary_file = output_file.replace('.csv', '_summary.json')
+        with open(summary_file, 'w') as f:
+            json.dump(summary, f, indent=2)
+        
+        logger.info(f"✅ Summary generated: {summary_file}")
+    except Exception as e:
+        logger.error(f"❌ Error generating summary: {e}")
     
     print("\n✅ Oracle analysis complete!")
     print(f"📄 Results: {output_file}")
