@@ -39,6 +39,14 @@ jobs:
           pip install --upgrade pip
           pip install requests deep-translator
           echo "✅ Dependencies installed for North America"
+
+      - name: Seed dummy oracle_predictions.csv if missing
+        run: |
+          mkdir -p data/output
+          if [ ! -f data/output/oracle_predictions.csv ]; then
+            echo "company_name,region,latest_funding" > data/output/oracle_predictions.csv
+            echo "Acme Corp,USA,1000000" >> data/output/oracle_predictions.csv
+          fi
       
       - name: 🌎 Scrape North America
         run: |
