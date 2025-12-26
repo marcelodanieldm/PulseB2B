@@ -3,7 +3,7 @@
 # Web scraping y RSS
 pygooglenews==0.1.2
 feedparser==6.0.8
-newspaper4k==0.2.8
+newspaper4k==0.9.4.1
 requests==2.31.0
 beautifulsoup4==4.12.3
 lxml==5.1.0
