@@ -39,17 +39,17 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-      
-      - name: 📦 Install Node.js Dependencies
-        run: |
-          npm ci
-          echo "✅ Node.js dependencies installed"
+        - name: 📦 Install Backend Node.js Dependencies
+          run: |
+            npm ci
+            echo "✅ Backend Node.js dependencies installed"
           working-directory: backend
-            echo "Installing backend dependencies..."
+
+        - name: 📦 Install Frontend Node.js Dependencies
+          run: |
             npm ci
-            echo "Installing frontend dependencies..."
-            cd ../frontend
-            npm ci
+            echo "✅ Frontend Node.js dependencies installed"
+          working-directory: frontend
             echo "✅ Node.js dependencies installed"
       
       # ============================================
