@@ -45,7 +45,7 @@ jobs:
       # =====================================================
       - name: Install dependencies
         run: |
-          pip install supabase-py
+          pip install supabase
 
       # =====================================================
       # STEP 4: Run Teaser Generator
