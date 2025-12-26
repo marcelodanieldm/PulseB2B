@@ -7,7 +7,7 @@ dateparser==0.7.6
 newspaper4k==0.9.4.1
 requests==2.31.0
 beautifulsoup4==4.12.3
-lxml==4.9.3
+lxml
 
 # NLP y Machine Learning
 transformers==4.36.2
