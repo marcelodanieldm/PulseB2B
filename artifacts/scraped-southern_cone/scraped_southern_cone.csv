@@ -1,0 +1,2 @@
+company_name,country,country_code,region,job_count,job_urls,timezone_match,currency_type,scraped_at,funding_amount,original_region
+SouthernCorp,Argentina,AR,southern_cone,4,http://southern.com,True,ARS,2025-12-26,300000,southern_cone

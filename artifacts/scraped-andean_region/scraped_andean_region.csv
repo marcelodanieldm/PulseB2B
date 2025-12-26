@@ -1,0 +1,2 @@
+company_name,country,country_code,region,job_count,job_urls,timezone_match,currency_type,scraped_at,funding_amount,original_region
+AndeanCorp,Peru,PE,andean_region,3,http://andean.com,False,PEN,2025-12-26,200000,andean_region

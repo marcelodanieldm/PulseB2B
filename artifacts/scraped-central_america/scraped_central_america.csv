@@ -1,0 +1,2 @@
+company_name,country,country_code,region,job_count,job_urls,timezone_match,currency_type,scraped_at,funding_amount,original_region
+CentralCorp,Mexico,MX,central_america,2,http://central.com,True,MXN,2025-12-26,500000,central_america
