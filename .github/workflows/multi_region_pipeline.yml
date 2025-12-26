@@ -40,13 +40,10 @@ jobs:
           pip install requests deep-translator
           echo "✅ Dependencies installed for North America"
 
-      - name: Seed dummy oracle_predictions.csv if missing
+      - name: Copiar oracle_predictions.example.csv como oracle_predictions.csv
         run: |
           mkdir -p data/output
-          if [ ! -f data/output/oracle_predictions.csv ]; then
-            echo "company_name,region,latest_funding" > data/output/oracle_predictions.csv
-            echo "Acme Corp,USA,1000000" >> data/output/oracle_predictions.csv
-          fi
+          cp data/oracle_predictions.example.csv data/output/oracle_predictions.csv
       
       - name: 🌎 Scrape North America
         run: |
@@ -80,13 +77,10 @@ jobs:
           pip install requests deep-translator
           echo "✅ Dependencies installed for Central America"
 
-      - name: Seed dummy oracle_predictions.csv if missing
+      - name: Copiar oracle_predictions.example.csv como oracle_predictions.csv
         run: |
           mkdir -p data/output
-          if [ ! -f data/output/oracle_predictions.csv ]; then
-            echo "company_name,region,latest_funding" > data/output/oracle_predictions.csv
-            echo "Acme Corp,USA,1000000" >> data/output/oracle_predictions.csv
-          fi
+          cp data/oracle_predictions.example.csv data/output/oracle_predictions.csv
       
       - name: 🌎 Scrape Central America
         run: |
@@ -120,13 +114,10 @@ jobs:
           pip install requests deep-translator
           echo "✅ Dependencies installed for Andean Region"
 
-      - name: Seed dummy oracle_predictions.csv if missing
+      - name: Copiar oracle_predictions.example.csv como oracle_predictions.csv
         run: |
           mkdir -p data/output
-          if [ ! -f data/output/oracle_predictions.csv ]; then
-            echo "company_name,region,latest_funding" > data/output/oracle_predictions.csv
-            echo "Acme Corp,USA,1000000" >> data/output/oracle_predictions.csv
-          fi
+          cp data/oracle_predictions.example.csv data/output/oracle_predictions.csv
       
       - name: 🌎 Scrape Andean Region
         env:
@@ -163,13 +154,10 @@ jobs:
           pip install requests deep-translator
           echo "✅ Dependencies installed for Southern Cone"
 
-      - name: Seed dummy oracle_predictions.csv if missing
+      - name: Copiar oracle_predictions.example.csv como oracle_predictions.csv
         run: |
           mkdir -p data/output
-          if [ ! -f data/output/oracle_predictions.csv ]; then
-            echo "company_name,region,latest_funding" > data/output/oracle_predictions.csv
-            echo "Acme Corp,USA,1000000" >> data/output/oracle_predictions.csv
-          fi
+          cp data/oracle_predictions.example.csv data/output/oracle_predictions.csv
       
       - name: 🌎 Scrape Southern Cone
         env:
