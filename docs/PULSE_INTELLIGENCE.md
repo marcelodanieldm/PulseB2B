@@ -342,7 +342,7 @@ Add to `.github/workflows/oracle-ghost-automation.yml`:
       --reports-dir data/output/pulse_reports
 
 - name: Upload Critical Opportunities
-  uses: actions/upload-artifact@v3
+  uses: actions/upload-artifact@v4
   with:
     name: pulse-reports
     path: data/output/pulse_reports/

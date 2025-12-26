@@ -209,7 +209,7 @@ jobs:
           python scripts/oracle_funding_detector.py
       
       - name: 📊 Upload Results Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: oracle-results
           path: data/output/oracle/
@@ -265,7 +265,7 @@ jobs:
           python scripts/oracle_funding_detector.py
       
       - name: 📤 Upload Oracle Results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: oracle-results
           path: data/output/oracle/

@@ -540,16 +540,19 @@ def main():
     # Get API keys from environment
     api_key = os.getenv('GOOGLE_CSE_API_KEY')
     cse_id = os.getenv('GOOGLE_CSE_ID')
-    
+    use_scraping_only = False
     if not api_key or not cse_id:
-        print("❌ Missing environment variables: GOOGLE_CSE_API_KEY, GOOGLE_CSE_ID")
-        sys.exit(1)
-    
+        print("⚠️  GOOGLE_CSE_API_KEY y/o GOOGLE_CSE_ID no están definidos. Usando modo scraping gratuito (sin API).")
+        api_key = ''
+        cse_id = ''
+        use_scraping_only = True
     print(f"🚀 Multi-Region Ghost Crawler - {region.upper()}")
     print(f"{'='*80}\n")
-    
     # Initialize crawler
     crawler = MultiRegionCrawler(api_key, cse_id, region)
+    if use_scraping_only:
+        # Si tu clase usa api_key/cse_id para decidir el modo, asegúrate que con string vacío use scraping
+        pass
     
     # Check cool-down status
     if not crawler.check_cooldown_status():

@@ -291,7 +291,7 @@ Add to `.github/workflows/oracle-ghost-automation.yml`:
       --output data/output/pulse_enhanced.csv
 
 - name: Upload Pulse Reports
-  uses: actions/upload-artifact@v3
+  uses: actions/upload-artifact@v4
   with:
     name: pulse-reports
     path: data/output/pulse_reports/

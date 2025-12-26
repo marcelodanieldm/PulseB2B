@@ -41,9 +41,6 @@ jobs:
           echo "✅ Dependencies installed for North America"
       
       - name: 🌎 Scrape North America
-        env:
-          GOOGLE_CSE_API_KEY: ${{ secrets.GOOGLE_CSE_API_KEY }}
-          GOOGLE_CSE_ID: ${{ secrets.GOOGLE_CSE_ID }}
         run: |
           python scripts/multi_region_crawler.py north_america
       
@@ -76,9 +73,6 @@ jobs:
           echo "✅ Dependencies installed for Central America"
       
       - name: 🌎 Scrape Central America
-        env:
-          GOOGLE_CSE_API_KEY: ${{ secrets.GOOGLE_CSE_API_KEY }}
-          GOOGLE_CSE_ID: ${{ secrets.GOOGLE_CSE_ID }}
         run: |
           python scripts/multi_region_crawler.py central_america
       
