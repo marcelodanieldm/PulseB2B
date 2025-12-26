@@ -44,6 +44,13 @@ jobs:
         run: |
           npm ci
           echo "✅ Node.js dependencies installed"
+          working-directory: backend
+            echo "Installing backend dependencies..."
+            npm ci
+            echo "Installing frontend dependencies..."
+            cd ../frontend
+            npm ci
+            echo "✅ Node.js dependencies installed"
       
       # ============================================
       # 2. INTELLIGENT SCRAPING (Google CSE Hack)
