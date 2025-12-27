@@ -298,6 +298,48 @@ const LeadScoreSchema = z.object({
 LeadScoreSchema.parse(lead); // Throws if invalid
 ```
 
+## PulseB2B FastAPI Backend - Documentación
+
+### Estructura principal
+- `app/main.py`: entrypoint FastAPI
+- `app/models/`: modelos SQLAlchemy
+- `app/schemas/`: Pydantic schemas
+- `app/views/`: routers/controllers (endpoints REST)
+- `app/services/`: lógica de scraping, scoring, análisis
+- `app/db/`: conexión y utilidades DB
+- `app/tasks/`: tareas programadas/background (APScheduler)
+- `app/utils/`: utilidades generales
+- `tests/`: pruebas automáticas (pytest)
+
+### Endpoints REST principales
+- `/companies`: CRUD de compañías
+- `/scrape/linkedin-jobs`: Scraping de empleos LinkedIn vía Google
+- `/scrape/sec-formd`: Scraping de SEC Form D (funding)
+- `/scrape/osint-pipeline`: Orquestador OSINT (POST, lista de compañías)
+- `/scrape/linkedin-company`: Buscar LinkedIn de empresa
+- `/analyze/intent`: Orquestador de análisis de intención (POST, compañía)
+- `/analyze/hpi`: Hiring Potential Index (GET, fecha de funding)
+- `/analyze/ghs`: Global Hiring Score (GET, funding y salario)
+- `/generate/telegram-teaser`: Generador de resumen para Telegram (POST, compañía)
+
+### Tareas programadas
+- Scraping automático de LinkedIn y SEC cada día (ver `app/tasks/scheduler.py`)
+
+### Pruebas automáticas
+- Ejecuta `pytest` en la carpeta `backend` para validar servicios y lógica.
+
+### Ejecución local
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+### Notas
+- Personaliza los servicios y endpoints según tus necesidades.
+- Integra tu base de datos real en `app/db/session.py`.
+- Agrega más tareas programadas en `app/tasks/scheduler.py`.
+
 ## 🔍 Monitoring
 
 ### 1. Supabase Dashboard
