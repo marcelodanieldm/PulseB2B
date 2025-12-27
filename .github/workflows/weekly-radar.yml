@@ -1,0 +1,25 @@
+name: Weekly Radar PDF
+
+on:
+  schedule:
+    - cron: '0 14 * * 0'
+  workflow_dispatch:
+
+jobs:
+  generate-weekly-radar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install requests reportlab
+      - name: Generate Weekly Radar
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: |
+          python scripts/generate_weekly_radar.py
