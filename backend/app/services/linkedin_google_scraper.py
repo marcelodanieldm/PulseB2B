@@ -37,7 +37,10 @@ class LinkedInGoogleScraper:
         'cloud engineer',
         'mobile developer',
         'python developer',
-        'react developer'
+        'react developer',
+        'QA Engineer',
+        'QA Automation',
+        'QA'
     ]
 
     def __init__(self, supabase_client: Optional[SupabaseClient] = None):
