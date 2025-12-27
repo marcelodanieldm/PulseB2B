@@ -1,4 +1,7 @@
-# Logs
+rm -rf node_modules package-lock.json
+npm install
+npm install vue-router@4 --save
+npm run dev# Logs
 logs
 *.log
 npm-debug.log*

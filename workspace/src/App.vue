@@ -23,8 +23,4 @@
 <script setup>
 </script>
 
-<style scoped>
-body {
-  background: #f8f9fa;
-}
-</style>
+
