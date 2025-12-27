@@ -32,11 +32,9 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
-      - name: Install dependencies
-        run: |
-          npm install @sendgrid/mail
-          npm install @supabase/supabase-js
-          npm install handlebars
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
 
       - name: Run test email (manual trigger)
         if: github.event.inputs.test_mode == 'true' && github.event.inputs.test_email != ''
