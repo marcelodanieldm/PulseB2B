@@ -1,4 +1,3 @@
-
 // Modelo: gestiona el estado de tareas y usuarios vía API Flask
 const API_URL = 'http://127.0.0.1:5000/api';
 const Model = (() => {
@@ -62,5 +61,21 @@ const Model = (() => {
     getUsers: () => users
   };
 })();
+
+export async function sendNotification(message, userType) {
+  const res = await fetch('/api/notifications', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message, user_type: userType })
+  });
+  if (!res.ok) throw new Error('Error enviando notificación');
+  return res.json();
+}
+
+export async function fetchNotifications(userType) {
+  const res = await fetch(`/api/notifications?user_type=${userType}`);
+  if (!res.ok) throw new Error('Error obteniendo notificaciones');
+  return res.json();
+}
 
 export default Model;

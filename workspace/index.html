@@ -1,3 +1,214 @@
+                <!-- Pro Services Cards (para usuario Pro) -->
+                <section id="pro-services" class="max-w-5xl mx-auto mt-20 mb-16 px-4 hidden">
+                  <h2 class="text-3xl font-bold text-center mb-10">Tus Servicios Activos</h2>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Dashboard Pro Card -->
+                    <div class="relative border-2 border-indigo-600 rounded-2xl bg-zinc-900 p-8 flex flex-col shadow-xl overflow-hidden">
+                      <div class="absolute top-4 right-4 bg-green-600 text-white text-xs px-3 py-1 rounded-full font-semibold">Current Plan</div>
+                      <h3 class="text-xl font-bold text-white mb-2">Dashboard Pro</h3>
+                      <ul class="text-zinc-300 text-sm mb-4 space-y-1">
+                        <li><span class="font-semibold">Unblurred Lead Data</span> (emails/phones)</li>
+                        <li>Historical Radar Archive</li>
+                        <li>Advanced Filters (Tech Stack, Region)</li>
+                        <li>CSV Export</li>
+                      </ul>
+                      <div class="text-green-400 text-xs mb-4">Full control over your outbound pipeline. No more guessing.</div>
+                      <a href="#dashboard" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg text-lg transition w-full text-center mb-2">Go to Dashboard</a>
+                      <button class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-semibold px-6 py-2 rounded-xl shadow text-sm transition w-full">Unsubscribe</button>
+                    </div>
+                    <!-- Custom Alert API Card (Enterprise Upsell) -->
+                    <div class="relative border border-zinc-800 rounded-2xl bg-zinc-900 p-8 flex flex-col shadow-lg overflow-hidden opacity-70">
+                      <div class="absolute top-4 right-4 bg-yellow-400 text-zinc-900 text-xs px-3 py-1 rounded-full font-semibold">Enterprise</div>
+                      <h3 class="text-xl font-bold text-white mb-2">Custom Alert API</h3>
+                      <ul class="text-zinc-300 text-sm mb-4 space-y-1">
+                        <li>Real-time Webhooks to Slack/CRM</li>
+                        <li>Custom filtering logic</li>
+                        <li>0-latency alerts</li>
+                        <li>Dedicated support</li>
+                      </ul>
+                      <div class="text-green-400 text-xs mb-4">Automate your sales workflow. Be the first to reach out, every single time.</div>
+                      <button class="bg-yellow-400 hover:bg-yellow-500 text-zinc-900 font-bold px-6 py-3 rounded-xl shadow-lg text-lg transition w-full">Contact Sales</button>
+                    </div>
+                  </div>
+                  <div class="mt-10 flex justify-center">
+                    <a href="#" id="stripe-portal-link-pro" class="text-indigo-600 hover:underline font-semibold">Manage your subscription in Stripe</a>
+                  </div>
+                </section>
+            <!-- Upgrade Modal (Premium) -->
+            <div id="upgrade-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/80 backdrop-blur-lg hidden">
+              <div class="relative bg-zinc-900 border-2 border-indigo-600 rounded-2xl shadow-2xl p-8 max-w-md w-full flex flex-col items-center animate-scale-up" style="box-shadow:0 0 32px 4px #6366f1,0 0 0 1px #312e81;">
+                <div class="absolute -inset-1 rounded-2xl pointer-events-none border-4 border-indigo-500/30 blur-lg opacity-60"></div>
+                <h2 class="text-2xl font-extrabold text-white mb-2 text-center drop-shadow">Unlock Premium Intelligence.</h2>
+                <div class="text-zinc-300 text-center mb-4">Get instant access to verified emails, direct phones, and full tech-stack dossiers.</div>
+                <ul class="text-zinc-200 text-sm mb-6 space-y-2 w-full max-w-xs">
+                  <li class="flex items-center gap-2"><span class="text-green-400">✓</span> Unlimited Lead Unlocks</li>
+                  <li class="flex items-center gap-2"><span class="text-green-400">✓</span> Full Historical Radar Archive</li>
+                  <li class="flex items-center gap-2"><span class="text-green-400">✓</span> Advanced Tech-Stack Filters</li>
+                  <li class="flex items-center gap-2"><span class="text-green-400">✓</span> CSV Export & CRM Integration</li>
+                </ul>
+                <div class="flex items-center gap-3 mb-6">
+                  <span class="text-3xl font-bold text-white">$29/mo</span>
+                  <span class="bg-indigo-600 text-white text-xs px-3 py-1 rounded-full font-semibold">Founding Member Price - 50% Off</span>
+                </div>
+                <button id="upgrade-modal-cta" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg text-lg transition mb-2">Get Pro Access Now</button>
+                <button id="close-upgrade-modal" class="text-zinc-400 hover:underline mt-2">Continue with Free</button>
+              </div>
+            </div>
+            <style>
+              @keyframes scale-up { 0% { transform: scale(0.85); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+              .animate-scale-up { animation: scale-up 0.35s cubic-bezier(.32,1.56,.64,1) both; }
+            </style>
+        <!-- Premium Services (The Upsell) -->
+        <section id="premium-upsell" class="max-w-5xl mx-auto mt-10 mb-20 px-4 hidden">
+          <h2 class="text-2xl font-bold text-center mb-8">Servicios Premium</h2>
+          <!-- Toggle Mensual/Anual -->
+          <div class="flex justify-center items-center gap-4 mb-8">
+            <span class="text-zinc-500">Mensual</span>
+            <button id="toggle-billing-cycle" class="relative w-12 h-6 bg-zinc-200 rounded-full flex items-center transition focus:outline-none">
+              <span id="billing-toggle-knob" class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition"></span>
+            </button>
+            <span class="text-zinc-500 flex items-center gap-2">Anual <span id="yearly-badge" class="ml-1 px-2 py-0.5 rounded bg-green-100 text-green-700 text-xs hidden">2 meses gratis</span></span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Dashboard Pro Card -->
+            <div class="relative group border border-zinc-800 rounded-2xl bg-zinc-900 p-8 flex flex-col shadow-lg overflow-hidden transition hover:shadow-2xl">
+              <div class="absolute top-4 right-4 bg-indigo-600 text-white text-xs px-3 py-1 rounded-full font-semibold">$29/mo <span class="hidden" id="pro-annual-price">$290/año</span></div>
+              <h3 class="text-xl font-bold text-white mb-2">Dashboard Pro</h3>
+              <ul class="text-zinc-300 text-sm mb-4 space-y-1">
+                <li><span class="font-semibold">Datos sin difuminar</span> (emails/teléfonos)</li>
+                <li>Archivo histórico Radar</li>
+                <li>Filtros avanzados (Tech Stack, Región)</li>
+                <li>Exportación CSV</li>
+              </ul>
+              <div class="text-green-400 text-xs mb-4">Control total sobre tu pipeline outbound. Sin adivinanzas.</div>
+              <button class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg text-lg transition w-full" id="upgrade-pro-btn">Upgrade to Pro</button>
+              <!-- Micro-interaction: Hover para desenfocar muestra -->
+              <div class="mt-6 relative">
+                <div class="rounded-lg overflow-hidden border border-zinc-700">
+                  <table class="w-full text-xs">
+                    <thead><tr class="bg-zinc-800 text-zinc-400"><th class="p-2">Empresa</th><th class="p-2">Email</th><th class="p-2">Teléfono</th></tr></thead>
+                    <tbody>
+                      <tr class="bg-zinc-900">
+                        <td class="p-2">Acme Corp</td>
+                        <td class="p-2 group-hover:blur-sm transition">ceo@acme.com</td>
+                        <td class="p-2 group-hover:blur-sm transition">+1 555-1234</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition">
+                    <span class="bg-zinc-900/80 text-white px-4 py-2 rounded-lg text-xs font-semibold">Desbloquea datos con Pro</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Custom Alert API Card -->
+            <div class="relative group border border-zinc-800 rounded-2xl bg-zinc-900 p-8 flex flex-col shadow-lg overflow-hidden transition hover:shadow-2xl">
+              <div class="absolute top-4 right-4 bg-yellow-400 text-zinc-900 text-xs px-3 py-1 rounded-full font-semibold">$199/mo</div>
+              <h3 class="text-xl font-bold text-white mb-2">Custom Alert API</h3>
+              <ul class="text-zinc-300 text-sm mb-4 space-y-1">
+                <li>Webhooks en tiempo real a Slack/CRM</li>
+                <li>Lógica de filtrado personalizada</li>
+                <li>Alertas sin latencia</li>
+                <li>Soporte dedicado</li>
+              </ul>
+              <div class="text-green-400 text-xs mb-4">Automatiza tu workflow de ventas. Sé el primero en contactar, siempre.</div>
+              <button class="bg-yellow-400 hover:bg-yellow-500 text-zinc-900 font-bold px-6 py-3 rounded-xl shadow-lg text-lg transition w-full" id="contact-sales-btn">Contact Sales</button>
+            </div>
+          </div>
+          <!-- Stripe Customer Portal Link -->
+          <div class="mt-10 flex justify-center">
+            <a href="#" id="stripe-portal-link" class="text-indigo-600 hover:underline font-semibold">Gestionar mi suscripción en Stripe</a>
+          </div>
+        </section>
+
+        <!-- Modal Feature Gate (Upsell) -->
+        <div id="feature-gate-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
+          <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full flex flex-col items-center">
+            <h2 class="text-xl font-bold mb-4 text-center">Pro Intelligence</h2>
+            <p class="text-zinc-700 mb-6 text-center">Este filtro es parte de nuestra inteligencia Pro. Descubre dónde se mueve el capital de nicho mejor pagado.</p>
+            <button class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg text-lg transition w-full mb-2" id="modal-upgrade-pro-btn">Upgrade to Pro</button>
+            <button class="text-zinc-500 hover:underline mt-2" id="close-feature-gate">Seguir con plan Free</button>
+          </div>
+        </div>
+
+        <!-- Modal Payment Success (Unlock Animation) -->
+        <div id="payment-success-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
+          <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full flex flex-col items-center">
+            <div class="w-16 h-16 mb-4 animate-bounce">
+              <svg class="w-full h-full text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="#22c55e" /><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" stroke="#fff" stroke-width="2"/></svg>
+            </div>
+            <h2 class="text-xl font-bold mb-2 text-center">¡Bienvenido, Pro!</h2>
+            <p class="text-zinc-700 mb-4 text-center">Ahora tienes acceso a <span class="font-semibold text-green-600">$XX Millones</span> en oportunidades de contrato.</p>
+            <button class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg text-lg transition w-full" id="close-payment-success">Ir al Dashboard</button>
+          </div>
+        </div>
+    <!-- Plan & Services Management (Freemium Mirror) -->
+    <section id="billing-plans" class="max-w-5xl mx-auto mt-20 mb-16 px-4 hidden">
+      <h2 class="text-3xl font-bold text-center mb-10">Gestión de Plan y Servicios</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Zona Free -->
+        <div class="rounded-2xl bg-zinc-100 border border-zinc-200 p-8 flex flex-col shadow-md">
+          <h3 class="text-xl font-bold text-zinc-700 mb-2 flex items-center gap-2">
+            <span class="inline-block w-2 h-2 rounded-full bg-green-400 animate-pulse"></span> Free
+          </h3>
+          <div class="text-zinc-500 mb-4">Ahorro de tiempo básico</div>
+          <div class="space-y-6">
+            <!-- Servicio: Daily Telegram Signal -->
+            <div class="bg-white border border-zinc-200 rounded-xl p-5">
+              <div class="font-semibold text-zinc-700">Daily Telegram Signal</div>
+              <div class="text-zinc-500 text-sm">1 lead de alta intención por día entregado a tu teléfono.</div>
+              <div class="text-green-600 text-xs mt-2">Valor: Conciencia instantánea de oportunidades top sin esfuerzo.</div>
+            </div>
+            <!-- Servicio: Current Weekly Radar -->
+            <div class="bg-white border border-zinc-200 rounded-xl p-5">
+              <div class="font-semibold text-zinc-700">Current Weekly Radar</div>
+              <div class="text-zinc-500 text-sm">Acceso al reporte PDF de inteligencia de la semana actual.</div>
+              <div class="text-green-600 text-xs mt-2">Valor: Visión estratégica de las últimas rondas de inversión en tu región.</div>
+            </div>
+            <!-- Servicio: Dashboard Preview -->
+            <div class="bg-white border border-zinc-200 rounded-xl p-5">
+              <div class="font-semibold text-zinc-700">Dashboard Preview</div>
+              <div class="text-zinc-500 text-sm">Acceso limitado a la tabla global de leads (info de contacto difuminada).</div>
+              <div class="text-green-600 text-xs mt-2">Valor: Vista en tiempo real del volumen de mercado y tendencias de stack tecnológico.</div>
+            </div>
+          </div>
+        </div>
+        <!-- Zona Pro/Enterprise -->
+        <div class="rounded-2xl bg-gradient-to-br from-indigo-700 via-indigo-600 to-indigo-800 border border-indigo-700 p-8 flex flex-col shadow-xl relative overflow-hidden">
+          <div class="absolute inset-0 pointer-events-none">
+            <div class="absolute -top-10 -left-10 w-40 h-40 bg-indigo-400 opacity-20 rounded-full blur-2xl animate-pulse"></div>
+            <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-indigo-500 opacity-20 rounded-full blur-2xl animate-pulse"></div>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
+            <svg class="w-5 h-5 text-yellow-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 17v.01M12 7v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            Pro / Enterprise
+          </h3>
+          <div class="text-indigo-100 mb-4">Dominio del mercado</div>
+          <div class="space-y-6">
+            <!-- Servicio Pro: LeadStream+ -->
+            <div class="bg-indigo-800/80 border border-indigo-500 rounded-xl p-5 flex items-center gap-3 opacity-60 relative">
+              <svg class="w-6 h-6 text-yellow-300 absolute top-3 right-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 17v.01M12 7v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <div>
+                <div class="font-semibold text-indigo-100 flex items-center gap-2">LeadStream+ <span class="ml-2 px-2 py-0.5 rounded bg-yellow-400/20 text-yellow-200 text-xs"><svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 17v.01M12 7v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>Bloqueado</span></div>
+                <div class="text-indigo-200 text-sm">Acceso a leads ilimitados, filtros avanzados y exportación completa.</div>
+              </div>
+            </div>
+            <!-- Servicio Pro: Market Insights Pro -->
+            <div class="bg-indigo-800/80 border border-indigo-500 rounded-xl p-5 flex items-center gap-3 opacity-60 relative">
+              <svg class="w-6 h-6 text-yellow-300 absolute top-3 right-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 17v.01M12 7v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <div>
+                <div class="font-semibold text-indigo-100 flex items-center gap-2">Market Insights Pro <span class="ml-2 px-2 py-0.5 rounded bg-yellow-400/20 text-yellow-200 text-xs"><svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 17v.01M12 7v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>Bloqueado</span></div>
+                <div class="text-indigo-200 text-sm">Reportes de inteligencia de mercado avanzados y alertas personalizadas.</div>
+              </div>
+            </div>
+          </div>
+          <button class="mt-8 bg-yellow-400 hover:bg-yellow-500 text-indigo-900 font-bold px-6 py-3 rounded-xl shadow-lg text-lg transition flex items-center gap-2 mx-auto">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 17v.01M12 7v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            Upgrade a Pro
+          </button>
+        </div>
+      </div>
+    </section>
 <!-- Exclusive Access User Dashboard (SPA Section) -->
     <section id="exclusive-dashboard" class="max-w-3xl mx-auto mt-24 px-4 hidden">
       <h2 class="text-2xl font-bold text-zinc-100 mb-8">Mi Panel de Servicios</h2>
@@ -161,87 +372,103 @@
         </div>
       </div>
       <div id="dashboard" class="tab-content-section hidden">
-        <!-- Lead Dossier View (hidden by default) -->
-        <div id="lead-dossier-view" class="hidden min-h-[80vh] flex flex-col items-center justify-center py-12">
-          <div class="w-full max-w-2xl mx-auto">
-            <!-- Header -->
-            <div class="flex flex-col sm:flex-row items-center justify-between gap-8 mb-10">
-              <div>
-                <h2 id="dossier-company" class="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-2">Acme Corp</h2>
-                <div id="dossier-hq" class="text-zinc-500 text-lg tracking-tight">San Francisco, CA</div>
-              </div>
-              <div class="flex flex-col items-center">
-                <span class="text-zinc-500 text-sm mb-2">Hiring Probability</span>
-                <svg id="dossier-hiring-svg" width="96" height="96" viewBox="0 0 96 96" class="block">
-                  <circle cx="48" cy="48" r="42" fill="none" stroke="#e5e7eb" stroke-width="8" />
-                  <circle id="dossier-hiring-bar" cx="48" cy="48" r="42" fill="none" stroke="#6366f1" stroke-width="8" stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="0" transform="rotate(-90 48 48)" />
-                  <text id="dossier-hiring-score" x="50%" y="54%" text-anchor="middle" fill="#18181b" font-size="2rem" font-family="inherit" font-weight="bold">85</text>
-                </svg>
-              </div>
+        <!-- Solo visible para superadmin -->
+        <div id="superadmin-panel" class="hidden">
+          <h2 class="text-2xl font-bold mb-4">Panel de Superadmin</h2>
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold mb-2">Gestión de Usuarios</h3>
+            <div class="mb-2 flex gap-2 items-center">
+              <label for="user-type-filter" class="font-medium">Filtrar por tipo:</label>
+              <select id="user-type-filter" class="border rounded px-2 py-1">
+                <option value="all">Todos</option>
+                <option value="free">Free</option>
+                <option value="pro">Pro</option>
+              </select>
             </div>
-            <!-- Bento Sections -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
-              <!-- Tech Stack -->
-              <div class="bg-white dark:bg-zinc-900 rounded-xl p-6 flex flex-col gap-4 shadow">
-                <div class="font-semibold text-zinc-800 dark:text-zinc-200 tracking-tight mb-2">Tech Stack</div>
-                <div id="dossier-techstack" class="flex flex-wrap gap-2"></div>
-              </div>
-              <!-- Growth Signals -->
-              <div class="bg-white dark:bg-zinc-900 rounded-xl p-6 flex flex-col gap-4 shadow">
-                <div class="font-semibold text-zinc-800 dark:text-zinc-200 tracking-tight mb-2">Growth Signals</div>
-                <div id="dossier-growth" class="text-zinc-600 dark:text-zinc-300 text-sm tracking-tight leading-relaxed"></div>
-              </div>
-              <!-- Financials -->
-              <div class="bg-white dark:bg-zinc-900 rounded-xl p-6 flex flex-col gap-4 shadow md:col-span-2">
-                <div class="font-semibold text-zinc-800 dark:text-zinc-200 tracking-tight mb-2">Financials</div>
-                <table class="w-full text-sm">
-                  <thead>
-                    <tr class="text-zinc-500">
-                      <th class="py-1 pr-4 text-left">Date</th>
-                      <th class="py-1 pr-4 text-left">Round</th>
-                      <th class="py-1 pr-4 text-left">Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody id="dossier-financials"></tbody>
-                </table>
-              </div>
-            </div>
-            <!-- Gated Contact Section -->
-            <div class="w-full flex justify-center">
-              <div id="dossier-contact" class="relative bg-white dark:bg-zinc-900 rounded-xl p-8 shadow w-full max-w-md flex flex-col items-center">
-                <div class="font-semibold text-zinc-800 dark:text-zinc-200 tracking-tight mb-2">Contact Info</div>
-                <div id="dossier-contact-content" class="w-full flex flex-col items-center"></div>
-                <div id="dossier-contact-blur" class="absolute inset-0 rounded-xl backdrop-blur-md bg-white/70 dark:bg-zinc-900/70 flex flex-col items-center justify-center" style="display:none;">
-                  <button id="dossier-unlock-btn" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-semibold shadow hover:bg-indigo-700 transition">Unlock Contact Details</button>
-                </div>
-              </div>
-            </div>
+            <table class="min-w-full text-sm text-left bg-white mb-2" id="admin-user-table">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th class="px-2 py-1">ID</th>
+                  <th class="px-2 py-1">Nombre</th>
+                  <th class="px-2 py-1">Email</th>
+                  <th class="px-2 py-1">Rol</th>
+                  <th class="px-2 py-1">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="admin-user-tbody"></tbody>
+            </table>
+            <div id="admin-user-msg" class="text-green-600 text-sm"></div>
+          </div>
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold mb-2">Enviar Notificación a Usuarios</h3>
+            <form id="admin-message-form" class="flex flex-col gap-2 mb-2">
+              <label for="message-type" class="font-medium">Tipo de usuario:</label>
+              <select id="message-type" class="border rounded px-2 py-1 w-40">
+                <option value="all">Todos</option>
+                <option value="free">Free</option>
+                <option value="pro">Pro</option>
+              </select>
+              <textarea id="admin-message" class="border rounded px-2 py-1" rows="2" placeholder="Escribe el mensaje..."></textarea>
+              <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded w-max">Enviar mensaje</button>
+            </form>
+            <div id="admin-message-status" class="text-green-600 text-sm"></div>
+          </div>
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold mb-2">Reportes de Usuarios</h3>
+            <ul class="list-disc ml-6">
+              <li><b>Usuarios Free:</b> <span id="report-free-users">-</span></li>
+              <li><b>Usuarios Pro:</b> <span id="report-pro-users">-</span></li>
+              <li><b>Origen de IP (País):</b> <span id="report-ip-country">-</span></li>
+              <li><b>Servicio Contratado:</b> <span id="report-service">-</span></li>
+            </ul>
+          </div>
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold mb-2">Estadísticas y KPIs</h3>
+            <ul class="list-disc ml-6">
+              <li><b>Usuarios activos:</b> <span id="kpi-active-users">-</span></li>
+              <li><b>Tareas completadas:</b> <span id="kpi-completed-tasks">-</span></li>
+              <li><b>Ventas totales:</b> <span id="kpi-sales">-</span></li>
+              <li><b>Ingresos:</b> <span id="kpi-revenue">-</span></li>
+            </ul>
           </div>
         </div>
-        <h1 class="text-2xl font-bold mb-6 text-center text-gray-800">Dashboard</h1>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
-          <div class="bg-blue-500 text-white rounded shadow p-6 flex flex-col items-center">
-            <div class="text-lg font-semibold card-title">Tareas</div>
-            <div class="text-4xl font-bold my-2" id="dashboard-tasks-count">0</div>
-            <div class="text-sm">Acceso rápido a la gestión de tareas.</div>
+        <!-- Visible para todos los roles -->
+        <div id="dashboard-content">
+          <h1 class="mb-4 text-center">Dashboard</h1>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+            <div class="bg-blue-500 text-white rounded shadow p-6 flex flex-col items-center">
+              <div class="text-lg font-semibold card-title">Tareas</div>
+              <div class="text-4xl font-bold my-2" id="dashboard-tasks-count">0</div>
+              <div class="text-sm">Acceso rápido a la gestión de tareas.</div>
+            </div>
+            <div class="bg-green-500 text-white rounded shadow p-6 flex flex-col items-center">
+              <div class="text-lg font-semibold card-title">Usuarios</div>
+              <div class="text-4xl font-bold my-2" id="dashboard-users-count">0</div>
+              <div class="text-sm">Ver y administrar usuarios.</div>
+            </div>
           </div>
-          <div class="bg-green-500 text-white rounded shadow p-6 flex flex-col items-center">
-            <div class="text-lg font-semibold card-title">Usuarios</div>
-            <div class="text-4xl font-bold my-2" id="dashboard-users-count">0</div>
-            <div class="text-sm">Ver y administrar usuarios.</div>
+          <!-- Persona-based Table Example -->
+          <div class="overflow-x-auto rounded shadow mb-6">
+            <div class="flex items-center justify-between mb-2">
+              <div id="pro-badge" class="hidden flex items-center gap-2 text-green-700 bg-green-100 px-3 py-1 rounded-full font-semibold text-xs">
+                <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="#22c55e" /><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" stroke="#fff" stroke-width="2"/></svg>
+                Pro
+              </div>
+              <button id="export-csv-btn" class="hidden bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded shadow text-xs transition flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 17v.01M12 7v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                Exportar CSV
+              </button>
+            </div>
+            <table class="min-w-full text-sm text-left bg-white" id="persona-table">
+              <thead class="bg-gray-100">
+                <tr id="persona-table-header"></tr>
+              </thead>
+              <tbody id="persona-table-body"></tbody>
+            </table>
           </div>
+          <!-- Persona-based CTA -->
+          <div id="paywall-cta" class="bg-yellow-100 text-yellow-900 px-4 py-3 rounded text-center font-semibold"></div>
         </div>
-        <!-- Persona-based Table Example -->
-        <div class="overflow-x-auto rounded shadow mb-6">
-          <table class="min-w-full text-sm text-left bg-white" id="persona-table">
-            <thead class="bg-gray-100">
-              <tr id="persona-table-header"></tr>
-            </thead>
-            <tbody id="persona-table-body"></tbody>
-          </table>
-        </div>
-        <!-- Persona-based CTA -->
-        <div id="paywall-cta" class="bg-yellow-100 text-yellow-900 px-4 py-3 rounded text-center font-semibold"></div>
       </div>
       <div id="admin-intel" class="tab-content-section hidden">
         <div class="max-w-5xl mx-auto py-8 flex flex-col gap-10">
@@ -550,7 +777,23 @@
                 const session = await supabase.auth.getSession();
                 const user = session?.data?.session?.user;
                 if (!user) return;
-                await supabase.from('profiles').update({ services: newServices }).eq('id', user.id);
+                // Determina si el usuario debe ser Pro o Free
+                // Servicios pagos: todos los que tengan price > 0
+                const paidServices = ALL_SERVICES.filter(s => s.price > 0).map(s => s.id);
+                const hasPaid = newServices.some(svc => paidServices.includes(svc));
+                const newRole = hasPaid ? 'pro' : 'free';
+                const prevRole = localStorage.getItem('user-role') || (window.currentUser && window.currentUser.role) || 'free';
+                await supabase.from('profiles').update({ services: newServices, role: newRole }).eq('id', user.id);
+                localStorage.setItem('user-role', newRole);
+                if (window.currentUser) window.currentUser.role = newRole;
+                // Mensaje visual de cambio de rol
+                if (prevRole !== newRole) {
+                  const msg = document.createElement('div');
+                  msg.textContent = newRole === 'pro' ? '¡Felicidades! Ahora eres usuario Pro 🎉' : 'Has vuelto al plan Free.';
+                  msg.className = 'fixed top-6 left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded shadow-lg z-50 animate-bounce';
+                  document.body.appendChild(msg);
+                  setTimeout(() => { msg.remove(); }, 3000);
+                }
               }
 
               async function renderUserServices() {
@@ -820,10 +1063,28 @@
             personaTableHeader.innerHTML += `<th class='px-4 py-2'>${col}</th>`;
           });
           personaTableBody.innerHTML = '';
+          // Check if user is Pro (simulate with localStorage for demo, replace with real logic)
+          const isPro = (window.currentUser && window.currentUser.role === 'pro') || localStorage.getItem('user-role') === 'pro';
           personaData.forEach(row => {
-            personaTableBody.innerHTML += `<tr>${config.order.map(col => `<td class='px-4 py-2'>${row[col]}</td>`).join('')}</tr>`;
+            personaTableBody.innerHTML += `<tr>${config.order.map(col => {
+              if (isPro && (col.toLowerCase().includes('email') || col.toLowerCase().includes('tel')) && row[col]) {
+                return `<td class='px-4 py-2'><span class='copyable cursor-pointer text-blue-600 hover:underline' title='Copiar' onclick='navigator.clipboard.writeText("${row[col]}")'>${row[col]}</span></td>`;
+              } else {
+                return `<td class='px-4 py-2'>${row[col]}</td>`;
+              }
+            }).join('')}</tr>`;
           });
           paywallCta.textContent = config.cta;
+          // Show Pro badge and Export button if Pro
+          const proBadge = document.getElementById('pro-badge');
+          const exportBtn = document.getElementById('export-csv-btn');
+          if (isPro) {
+            if (proBadge) proBadge.classList.remove('hidden');
+            if (exportBtn) exportBtn.classList.remove('hidden');
+          } else {
+            if (proBadge) proBadge.classList.add('hidden');
+            if (exportBtn) exportBtn.classList.add('hidden');
+          }
         }
         function showPersonaModal() {
           personaModal.classList.remove('hidden');
@@ -849,6 +1110,30 @@
           showPersonaModal();
         } else {
           renderPersonaTable(getPersona());
+        }
+        // Export to CSV logic (Pro only)
+        const exportBtn = document.getElementById('export-csv-btn');
+        if (exportBtn) {
+          exportBtn.onclick = function() {
+            // Only allow if Pro
+            const isPro = (window.currentUser && window.currentUser.role === 'pro') || localStorage.getItem('user-role') === 'pro';
+            if (!isPro) return;
+            let csv = '';
+            const headers = Array.from(document.querySelectorAll('#persona-table thead th')).map(th => th.textContent.trim());
+            csv += headers.join(',') + '\n';
+            Array.from(document.querySelectorAll('#persona-table tbody tr')).forEach(tr => {
+              const row = Array.from(tr.children).map(td => '"' + td.textContent.trim().replace(/"/g, '""') + '"');
+              csv += row.join(',') + '\n';
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'leads.csv';
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+          };
         }
     // Superuser session logic
     function isSuperuser() {
@@ -1254,632 +1539,27 @@
       renderUsers();
     }
     renderUsers();
+
+    // --- DASHBOARD ---
+    function updateDashboard() {
+      const dash = document.getElementById('dashboard');
+      if (!dash) return;
+      dash.querySelector('.card-title').textContent = `Tareas (${tasks.length})`;
+      dash.querySelectorAll('.card-title')[1].textContent = `Usuarios (${users.length})`;
+    }
+    // Actualizar dashboard al cambiar tareas/usuarios
+    function updateAll() {
+      renderTasks();
+      renderUsers();
+      updateDashboard();
+    }
+    // Llamar updateDashboard después de render inicial
+    updateDashboard();
+    // Actualizar dashboard cada vez que se cambia de tab
+    document.querySelectorAll('a[data-bs-toggle="tab"]').forEach(tab => {
+      tab.addEventListener('shown.bs.tab', updateDashboard);
+    });
   </script>
-    <script type="module" src="src/controller.js"></script>
-</body>
-            <script>
-              // --- SPA Navigation ---
-              const sections = {
-                '#radar': document.getElementById('radar-archive'),
-                               '#dashboard': document.getElementById('pro-dashboard'),
-                '#settings-api': document.getElementById('api-console'),
-              };
-              function showSection(hash) {
-                Object.values(sections).forEach(sec => sec && sec.classList.add('hidden'));
-                if (sections[hash]) sections[hash].classList.remove('hidden');
-              }
-              window.addEventListener('hashchange', () => showSection(location.hash));
-              // Mostrar sección inicial
-              showSection(location.hash || '#dashboard');
-
-              // --- Supabase Config (rellena con tus claves) ---
-              // --- Supabase Config (PEGA TUS CLAVES AQUÍ) ---
-              // const SUPABASE_URL = 'https://xxxx.supabase.co';
-              // const SUPABASE_KEY = 'eyJhbGciOi...';
-              const SUPABASE_URL = 'https://TU_SUPABASE_URL.supabase.co';
-              const SUPABASE_KEY = 'TU_SUPABASE_KEY';
-
-              // --- Función utilitaria para fetch a Supabase REST ---
-              async function supabaseFetch(path, params = {}) {
-                const url = new URL(SUPABASE_URL + path);
-                Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
-                const res = await fetch(url, {
-                  headers: {
-                    apikey: SUPABASE_KEY,
-                    Authorization: `Bearer ${SUPABASE_KEY}`
-                  }
-                });
-                return res.ok ? res.json() : [];
-              }
-
-              // --- Radar Archive: Fetch PDFs ---
-              async function fetchRadarArchive() {
-                const grid = document.getElementById('radar-grid');
-                if (!grid) return;
-                grid.innerHTML = '';
-                // Simulación de archivos
-                const files = [
-                  { name: '2025-12-28.pdf', created_at: '2025-12-28', url: '#', isCurrent: true },
-                  { name: '2025-12-21.pdf', created_at: '2025-12-21', url: '#', isCurrent: false },
-                  { name: '2025-12-14.pdf', created_at: '2025-12-14', url: '#', isCurrent: false },
-                ];
-                // Obtener usuario y plan
-                let isPremium = false;
-                const session = await supabase.auth.getSession();
-                const user = session?.data?.session?.user;
-                if (user) {
-                  const { data: profile } = await supabase.from('profiles').select('plan_type').eq('id', user.id).single();
-                  isPremium = profile?.plan_type === 'pro';
-                }
-                // Calcular semana actual (domingo a domingo)
-                function isCurrentWeek(dateStr) {
-                  const now = new Date();
-                  const d = new Date(dateStr);
-                  // Buscar el domingo anterior (o hoy si es domingo)
-                  const day = now.getDay();
-                  const sunday = new Date(now);
-                  sunday.setDate(now.getDate() - day);
-                  const nextSunday = new Date(sunday);
-                  nextSunday.setDate(sunday.getDate() + 7);
-                  return d >= sunday && d < nextSunday;
-                }
-                for (const file of files) {
-                  const card = document.createElement('div');
-                  card.className = 'bg-zinc-900 border border-zinc-800 rounded-xl p-6 flex flex-col gap-4 items-start shadow';
-                  card.innerHTML = `
-                    <div class="flex items-center gap-3 mb-2">
-                      <i data-lucide="file-text" class="w-7 h-7 text-indigo-500"></i>
-                      <span class="text-zinc-200 font-medium text-lg">${file.name.replace('.pdf','')}</span>
-                    </div>
-                    <div class="text-zinc-400 text-sm mb-4">${file.created_at}</div>
-                  `;
-                  // Lógica de acceso
-                  if (isCurrentWeek(file.created_at)) {
-                    const btn = document.createElement('a');
-                    btn.href = file.url;
-                    btn.className = 'bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-semibold transition';
-                    btn.textContent = 'Download';
-                    card.appendChild(btn);
-                  } else if (isPremium) {
-                    const btn = document.createElement('a');
-                    btn.href = file.url;
-                    btn.className = 'bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-semibold transition';
-                    btn.textContent = 'Download';
-                    card.appendChild(btn);
-                  } else {
-                    const btn = document.createElement('button');
-                    btn.className = 'flex items-center gap-2 bg-zinc-800 text-zinc-400 px-4 py-2 rounded-lg font-semibold transition';
-                    btn.innerHTML = '<i data-lucide="lock" class="w-5 h-5"></i> Pro Only';
-                    btn.onclick = function() { document.getElementById('upgrade-modal').classList.remove('hidden'); };
-                    card.appendChild(btn);
-                  }
-                  grid.appendChild(card);
-                }
-                if (window.lucide) lucide.createIcons();
-              }
-              // --- Pro Dashboard: Fetch Leads ---
-              async function fetchProDashboard() {
-                const tbody = document.getElementById('pro-tbody');
-                if (!tbody) return;
-                tbody.innerHTML = '';
-                // Obtener usuario y plan
-                let isPremium = false;
-                const session = await supabase.auth.getSession();
-                const user = session?.data?.session?.user;
-                if (user) {
-                  const { data: profile } = await supabase.from('profiles').select('plan_type').eq('id', user.id).single();
-                  isPremium = profile?.plan_type === 'pro';
-                }
-                // Fetch leads desde Supabase (simulado aquí)
-                // const { data: leads } = await supabase.from('leads').select('*').order('score', { ascending: false }).limit(20);
-                const leads = [
-                  { company: 'Acme Corp', contact: 'john@acme.com', score: 97, region: 'US', is_premium: false },
-                  { company: 'Globex', contact: 'ceo@globex.com', score: 95, region: 'Canada', is_premium: true },
-                  { company: 'Initech', contact: 'sales@initech.com', score: 92, region: 'Mexico', is_premium: false },
-                  { company: 'Umbrella', contact: 'biz@umbrella.com', score: 90, region: 'Chile', is_premium: true },
-                ];
-                for (const lead of leads) {
-                  const tr = document.createElement('tr');
-                  tr.className = 'border-b border-zinc-800 hover:bg-zinc-900/50 transition';
-                  tr.innerHTML = `
-                    <td class="px-3 py-2 ${lead.is_premium ? 'text-zinc-100' : ''}">${lead.company}</td>
-                    <td class="px-3 py-2">${lead.is_premium || isPremium ? lead.contact : '<span class=\'blur-sm select-none\'>' + lead.contact + '</span>'}</td>
-                    <td class="px-3 py-2">${lead.score}</td>
-                    <td class="px-3 py-2">${lead.region}</td>
-                  `;
-                  tbody.appendChild(tr);
-                }
-                // Export CSV button
-                const btn = document.getElementById('export-csv-btn');
-                if (btn) {
-                  if (isPremium) {
-                    btn.disabled = false;
-                    btn.classList.remove('text-zinc-400', 'bg-zinc-800', 'cursor-not-allowed');
-                    btn.classList.add('bg-indigo-600', 'hover:bg-indigo-700', 'text-white');
-                    btn.title = '';
-                    btn.onclick = () => {
-                      // Exportar a CSV (simulado)
-                      let csv = 'Company,Contact Info,Score,Region\n';
-                      leads.forEach(l => {
-                        csv += `${l.company},${l.contact},${l.score},${l.region}\n`;
-                      });
-                      const blob = new Blob([csv], { type: 'text/csv' });
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = 'leads.csv';
-                      document.body.appendChild(a);
-                      a.click();
-                      document.body.removeChild(a);
-                      URL.revokeObjectURL(url);
-                    };
-                    document.getElementById('csv-tooltip').classList.add('hidden');
-                  } else {
-                    btn.disabled = true;
-                    btn.classList.add('text-zinc-400', 'bg-zinc-800', 'cursor-not-allowed');
-                    btn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700', 'text-white');
-                    btn.title = 'Upgrade to Pro';
-                    btn.onclick = null;
-                  }
-                }
-              }
-              // --- API Console: Fetch API Key & Webhooks ---
-              async function fetchApiConsole() {
-                // --- INTEGRACIÓN REAL: Llama a tu backend protegido (Edge Function) ---
-                try {
-                  const session = await supabase.auth.getSession();
-                  const token = session?.data?.session?.access_token;
-                  if (!token) throw new Error('No hay sesión activa. Inicia sesión para acceder a la consola API.');
-                  // Cambia la URL por la de tu Edge Function desplegada
-                  const res = await fetch('https://<TU-PROYECTO>.functions.supabase.co/supabase_middleware', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                  });
-                  const data = await res.json();
-                  if (!res.ok) throw new Error(data.error || 'Error al acceder a la API protegida');
-                  // Asume que el backend devuelve { apiKey, webhookLogs }
-                  document.getElementById('api-key-field').value = data.apiKey || '';
-                  const tbody = document.querySelector('#api-console tbody');
-                  if (!tbody) return;
-                  tbody.innerHTML = '';
-                  (data.webhookLogs || []).forEach(log => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                      <td class="px-4 py-2">${log.status === 'success' ? '<i data-lucide=\'check-circle\' class=\'w-5 h-5 text-green-500\'></i>' : '<i data-lucide=\'x-circle\' class=\'w-5 h-5 text-red-500\'></i>'}</td>
-                      <td class="px-4 py-2">${log.ts || log.timestamp || ''}</td>
-                      <td class="px-4 py-2 text-zinc-100">${log.lead || log.event || ''}</td>
-                    `;
-                    tbody.appendChild(tr);
-                  });
-                  if (window.lucide) lucide.createIcons();
-                } catch (err) {
-                  alert('Error: ' + err.message);
-                }
-              }
-              // --- Inicialización de datos según sección ---
-              function initSectionData() {
-                if (location.hash === '#radar') fetchRadarArchive();
-                if (location.hash === '#dashboard' || !location.hash) fetchProDashboard();
-                if (location.hash === '#settings-api') fetchApiConsole();
-              }
-              window.addEventListener('hashchange', initSectionData);
-              initSectionData();
-            </script>
-        <!-- Radar Archive Section (/radar) -->
-        <section id="radar-archive" class="max-w-3xl mx-auto mt-24 px-4">
-          <h2 class="text-2xl font-bold text-zinc-100 mb-8">Radar Archive</h2>
-          <div id="radar-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-6"></div>
-                </section>
-                <!-- Upgrade Modal -->
-                <div id="upgrade-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
-                  <div class="bg-zinc-900 rounded-xl shadow-lg p-8 max-w-sm w-full flex flex-col items-center gap-6">
-                    <h3 class="text-xl font-bold text-zinc-100">Upgrade to Pro</h3>
-                    <p class="text-zinc-400 text-center">Unlock all Radar Archive reports and premium features for just <span class="text-indigo-400 font-semibold">$29/mo</span>.</p>
-                    <a href="#pricing" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-2 rounded-lg transition">See Plans</a>
-                    <button onclick="document.getElementById('upgrade-modal').classList.add('hidden')" class="text-zinc-400 hover:text-zinc-200 text-sm mt-2">Close</button>
-                  </div>
-                </div>
-        </section>
-
-        <!-- Pro Dashboard Section (TanStack Table style) -->
-        <section id="pro-dashboard" class="max-w-6xl mx-auto mt-24 px-4">
-          <h2 class="text-2xl font-bold text-zinc-100 mb-8">Pro Dashboard</h2>
-          <div class="overflow-x-auto rounded-2xl bg-zinc-900/60 border border-zinc-800 shadow-lg">
-            <table id="pro-table" class="min-w-full text-xs text-left">
-              <thead class="bg-zinc-950/80">
-                <tr>
-                  <th class="px-3 py-2 text-zinc-300 font-semibold">Company</th>
-                  <th class="px-3 py-2 text-zinc-300 font-semibold">Contact Info</th>
-                  <th class="px-3 py-2 text-zinc-300 font-semibold">Score</th>
-                  <th class="px-3 py-2 text-zinc-300 font-semibold">Region</th>
-                </tr>
-              </thead>
-              <tbody id="pro-tbody"></tbody>
-            </table>
-            <div class="flex items-center justify-between p-4">
-              <button id="export-csv-btn" class="flex items-center gap-2 bg-zinc-800 text-zinc-400 px-4 py-2 rounded-lg font-semibold relative group" disabled>
-                <i data-lucide="download" class="w-5 h-5"></i> Export CSV
-                <span id="csv-tooltip" class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block bg-zinc-900 text-xs text-zinc-200 px-2 py-1 rounded shadow">Upgrade to Pro to export leads</span>
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <!-- API Console Section (/settings/api) -->
-        <section id="api-console" class="max-w-3xl mx-auto mt-24 px-4">
-          <h2 class="text-2xl font-bold text-zinc-100 mb-8">API Console</h2>
-          <div class="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-8 mb-8 backdrop-blur">
-            <label class="block text-zinc-300 font-semibold mb-2">Your API Key</label>
-            <div class="flex items-center gap-2">
-              <input type="password" value="sk-xxxx-xxxx-xxxx" readonly class="bg-zinc-800 text-zinc-200 px-4 py-2 rounded-lg w-full font-mono" id="api-key-field">
-              <button id="copy-api-key" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg transition flex items-center gap-1"><i data-lucide="copy" class="w-5 h-5"></i> Copy</button>
-              <button id="regen-api-key" class="bg-zinc-700 hover:bg-red-600 text-red-200 hover:text-white px-3 py-2 rounded-lg transition flex items-center gap-1"><i data-lucide="refresh-ccw" class="w-5 h-5"></i> Regenerate</button>
-            </div>
-            <p class="text-xs text-zinc-400 mt-2">Keep your API key secret. <span class="underline cursor-pointer text-indigo-400" id="show-api-key">Show</span></p>
-          </div>
-          <div class="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-8 backdrop-blur">
-            <h3 class="text-lg font-semibold text-zinc-200 mb-4">Latest Webhook Deliveries</h3>
-            <div id="webhook-empty-state" class="text-zinc-400 text-center py-8 hidden">
-              <i data-lucide="bell-off" class="w-8 h-8 mx-auto mb-2"></i>
-              <p>No webhook deliveries yet.</p>
-            </div>
-            <table id="webhook-table" class="min-w-full text-sm text-left">
-              <thead>
-                <tr>
-                  <th class="px-4 py-2 text-zinc-300">Status</th>
-                  <th class="px-4 py-2 text-zinc-300">Timestamp</th>
-                  <th class="px-4 py-2 text-zinc-300">Lead Name</th>
-                </tr>
-              </thead>
-              <tbody>
-                <!-- Webhook rows injected here -->
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Modal for API Key Regeneration -->
-          <div id="modal-api-regen" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 hidden">
-            <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-8 max-w-sm w-full">
-              <h4 class="text-lg font-bold text-zinc-100 mb-2">Regenerate API Key?</h4>
-              <p class="text-zinc-400 mb-4">This will invalidate your current API key. Apps using the old key will stop working. Continue?</p>
-              <div class="flex gap-2 justify-end">
-                <button id="cancel-regen" class="px-4 py-2 rounded-lg bg-zinc-700 text-zinc-200 hover:bg-zinc-800">Cancel</button>
-                <button id="confirm-regen" class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700">Regenerate</button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <script>
-          // Lucide icons init (if not already present)
-          if (window.lucide) lucide.createIcons();
-          else {
-            const script = document.createElement('script');
-            script.src = 'https://unpkg.com/lucide@latest/dist/umd/lucide.min.js';
-            script.onload = () => lucide.createIcons();
-            document.body.appendChild(script);
-          }
-
-          // --- API Console Developer Logic ---
-          document.addEventListener('DOMContentLoaded', function () {
-            // Elements
-            const apiKeyField = document.getElementById('api-key-field');
-            const copyBtn = document.getElementById('copy-api-key');
-            const regenBtn = document.getElementById('regen-api-key');
-            const showBtn = document.getElementById('show-api-key');
-            const modal = document.getElementById('modal-api-regen');
-            const cancelRegen = document.getElementById('cancel-regen');
-            const confirmRegen = document.getElementById('confirm-regen');
-            const webhookTable = document.getElementById('webhook-table');
-            const webhookTbody = webhookTable ? webhookTable.querySelector('tbody') : null;
-            const webhookEmpty = document.getElementById('webhook-empty-state');
-
-            // State
-            let apiKey = 'sk-xxxx-xxxx-xxxx'; // Default, replace with fetch
-            let apiKeyMasked = true;
-
-            // Fetch API key and webhooks (simulate async)
-            async function fetchApiConsole() {
-              // TODO: Replace with real backend call
-              // Simulate: { apiKey, webhookLogs }
-              const data = {
-                apiKey: 'sk-1234-5678-ABCD',
-                webhookLogs: [
-                  { status: 'success', timestamp: '2025-12-27 13:00', lead: 'Acme Corp' },
-                  { status: 'fail', timestamp: '2025-12-27 12:30', lead: 'Globex' }
-                ]
-              };
-              apiKey = data.apiKey;
-              updateApiKeyField();
-              renderWebhooks(data.webhookLogs);
-            }
-
-            function updateApiKeyField() {
-              apiKeyField.value = apiKeyMasked ? apiKey.replace(/.(?=.{4})/g, '•') : apiKey;
-            }
-
-            // Copy API key
-            copyBtn && copyBtn.addEventListener('click', function () {
-              navigator.clipboard.writeText(apiKey);
-              copyBtn.innerHTML = '<i data-lucide="check" class="w-5 h-5"></i> Copied';
-              setTimeout(() => {
-                copyBtn.innerHTML = '<i data-lucide="copy" class="w-5 h-5"></i> Copy';
-                if (window.lucide) lucide.createIcons();
-              }, 1200);
-              if (window.lucide) lucide.createIcons();
-            });
-
-            // Show/hide API key
-            showBtn && showBtn.addEventListener('click', function () {
-              apiKeyMasked = !apiKeyMasked;
-              updateApiKeyField();
-              showBtn.textContent = apiKeyMasked ? 'Show' : 'Hide';
-            });
-
-            // Regenerate API key (modal)
-            regenBtn && regenBtn.addEventListener('click', function () {
-              modal.classList.remove('hidden');
-            });
-            cancelRegen && cancelRegen.addEventListener('click', function () {
-              modal.classList.add('hidden');
-            });
-            confirmRegen && confirmRegen.addEventListener('click', async function () {
-              // TODO: Replace with real backend call
-              apiKey = 'sk-' + Math.random().toString(36).slice(2, 10).toUpperCase();
-              apiKeyMasked = true;
-              updateApiKeyField();
-              showBtn.textContent = 'Show';
-              modal.classList.add('hidden');
-              copyBtn.innerHTML = '<i data-lucide="copy" class="w-5 h-5"></i> Copy';
-              if (window.lucide) lucide.createIcons();
-            });
-
-            // Render webhooks
-            function renderWebhooks(logs) {
-              if (!webhookTbody) return;
-              webhookTbody.innerHTML = '';
-              if (!logs || logs.length === 0) {
-                webhookTable.classList.add('hidden');
-                webhookEmpty.classList.remove('hidden');
-              } else {
-                webhookTable.classList.remove('hidden');
-                webhookEmpty.classList.add('hidden');
-                logs.forEach(log => {
-                  const icon = log.status === 'success'
-                    ? `<i data-lucide='check-circle' class='w-5 h-5 text-green-500'></i>`
-                    : `<i data-lucide='x-circle' class='w-5 h-5 text-red-500'></i>`;
-                  webhookTbody.innerHTML += `<tr><td class='px-4 py-2'>${icon}</td><td class='px-4 py-2'>${log.timestamp}</td><td class='px-4 py-2 text-zinc-100'>${log.lead}</td></tr>`;
-                });
-                if (window.lucide) lucide.createIcons();
-              }
-            }
-
-            // Only fetch if API Console is visible
-            if (location.hash === '#settings-api') fetchApiConsole();
-            window.addEventListener('hashchange', function () {
-              if (location.hash === '#settings-api') fetchApiConsole();
-            });
-          });
-        </script>
-    <!-- Products & Services Section -->
-    <section class="bg-zinc-950 py-20 px-4">
-      <div class="max-w-6xl mx-auto">
-        <h2 class="text-3xl md:text-4xl font-extrabold text-zinc-100 mb-12 text-center tracking-tight">Products & Services</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          <!-- Service 1: Daily Telegram Signal -->
-          <div class="border border-zinc-800 bg-zinc-900/60 rounded-2xl p-8 flex flex-col h-full">
-            <span class="text-xs uppercase tracking-widest text-indigo-400 font-bold mb-2">Free</span>
-            <h3 class="text-xl font-semibold text-zinc-100 mb-2">Daily Telegram Signal</h3>
-            <p class="text-zinc-400 mb-3">One "Hot" lead daily with a hiring probability &gt;90%.</p>
-            <ul class="text-zinc-400 text-sm mb-6 flex-1">
-              <li class="mb-1"><span class="font-medium text-zinc-200">Advantage:</span> Instant mobile notifications. No need to check the dashboard.</li>
-              <li><span class="font-medium text-zinc-200">Result:</span> Real-time awareness of the most urgent market opportunities.</li>
-            </ul>
-            <a href="https://t.me/PulseB2B_Bot" target="_blank" class="mt-auto inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-2 rounded-lg shadow transition text-center">Join Telegram Bot</a>
-          </div>
-          <!-- Service 2: Weekly Radar PDF -->
-          <div class="border border-zinc-800 bg-zinc-900/60 rounded-2xl p-8 flex flex-col h-full">
-            <span class="text-xs uppercase tracking-widest text-indigo-400 font-bold mb-2">Free</span>
-            <h3 class="text-xl font-semibold text-zinc-100 mb-2">The Weekly Radar PDF</h3>
-            <p class="text-zinc-400 mb-3">A curated report featuring the top 10 opportunities per region.</p>
-            <ul class="text-zinc-400 text-sm mb-6 flex-1">
-              <li class="mb-1"><span class="font-medium text-zinc-200">Advantage:</span> Deep-dive analysis of regional trends (US, Canada, LATAM).</li>
-              <li><span class="font-medium text-zinc-200">Result:</span> Strategic overview for long-term sales planning.</li>
-            </ul>
-            <a href="#" onclick="alert('Coming soon! Request your sample via Telegram.')" class="mt-auto inline-block bg-zinc-800 hover:bg-zinc-700 text-zinc-100 font-bold px-5 py-2 rounded-lg shadow transition text-center">Download Sample</a>
-          </div>
-          <!-- Service 3: Dashboard Pro -->
-          <div class="border border-zinc-800 bg-zinc-900/60 rounded-2xl p-8 flex flex-col h-full ring-1 ring-indigo-500 relative">
-            <span class="absolute top-4 right-4 bg-indigo-600 text-white text-xs px-3 py-1 rounded-full font-bold shadow">Most Popular</span>
-            <span class="text-xs uppercase tracking-widest text-indigo-400 font-bold mb-2">$29/mo</span>
-            <h3 class="text-xl font-semibold text-zinc-100 mb-2">Dashboard Pro</h3>
-            <p class="text-zinc-400 mb-3">Total access to the live database, granular filters (Country, Tech Stack), and CSV exports.</p>
-            <ul class="text-zinc-400 text-sm mb-6 flex-1">
-              <li class="mb-1"><span class="font-medium text-zinc-200">Advantage:</span> Full control over your prospecting pipeline.</li>
-              <li><span class="font-medium text-zinc-200">Result:</span> 10x faster lead qualification and direct CRM integration.</li>
-            </ul>
-            <a href="https://buy.stripe.com/8wM3eQ0bA2gQ2wQbII" target="_blank" class="mt-auto inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-2 rounded-lg shadow transition text-center">Start Pro</a>
-          </div>
-          <!-- Service 4: Custom Alert API -->
-          <div class="border border-zinc-800 bg-zinc-900/60 rounded-2xl p-8 flex flex-col h-full">
-            <span class="text-xs uppercase tracking-widest text-indigo-400 font-bold mb-2">$199/mo</span>
-            <h3 class="text-xl font-semibold text-zinc-100 mb-2">Custom Alert API</h3>
-            <p class="text-zinc-400 mb-3">Direct Webhooks to your Slack or CRM.</p>
-            <ul class="text-zinc-400 text-sm mb-6 flex-1">
-              <li class="mb-1"><span class="font-medium text-zinc-200">Advantage:</span> Zero-latency data delivery.</li>
-              <li><span class="font-medium text-zinc-200">Result:</span> Full workflow automation for high-volume sales teams.</li>
-            </ul>
-            <a href="#" onclick="window.location.href='/signup'" class="mt-auto inline-block bg-zinc-800 hover:bg-zinc-700 text-zinc-100 font-bold px-5 py-2 rounded-lg shadow transition text-center">Contact Sales</a>
-          </div>
-        </div>
-      </div>
-    </section>
-</html>
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>workspace</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  </head>
-  <body>
-    <div id="app"></div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="module" src="/src/main.js"></script>
-    <script type="module" src="/src/main.js"></script>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Frontend Bootstrap Simple</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-  <div class="container py-5">
-    <nav class="mb-4">
-      <ul class="nav nav-pills justify-content-center gap-2">
-        <li class="nav-item"><a href="#tareas" class="nav-link active" data-bs-toggle="tab">Tareas</a></li>
-        <li class="nav-item"><a href="#usuarios" class="nav-link" data-bs-toggle="tab">Usuarios</a></li>
-        <li class="nav-item"><a href="#dashboard" class="nav-link" data-bs-toggle="tab">Dashboard</a></li>
-        <li class="nav-item"><a href="#configuracion" class="nav-link" data-bs-toggle="tab">Configuración</a></li>
-      </ul>
-    </nav>
-    <div class="tab-content">
-      <div class="tab-pane fade show active" id="tareas">
-        <h1 class="mb-4 text-center">Gestión de Tareas</h1>
-        <form class="mb-4" id="task-form">
-          <div class="input-group">
-            <input id="task-input" type="text" class="form-control" placeholder="Nueva tarea" />
-            <button class="btn btn-success" type="submit">Agregar</button>
-          </div>
-        </form>
-        <div id="task-loading" class="text-center my-4" style="display:none">
-          <span class="text-blue-600">Cargando tareas...</span>
-        </div>
-        <div id="task-error" class="text-center my-4 text-red-600" style="display:none"></div>
-        <table class="table table-striped table-hover" id="task-table">
-          <thead><tr><th>#</th><th>Tarea</th><th>Completada</th><th>Acciones</th></tr></thead>
-          <tbody id="task-tbody"></tbody>
-        </table>
-      </div>
-      <div class="tab-pane fade" id="usuarios">
-        <h2 class="mb-4">Usuarios</h2>
-        <form class="mb-3" id="user-form">
-          <div class="row g-2">
-            <div class="col-md-4"><input id="user-name" type="text" class="form-control" placeholder="Nombre" /></div>
-            <div class="col-md-4"><input id="user-email" type="email" class="form-control" placeholder="Email" /></div>
-            <div class="col-md-4"><button class="btn btn-primary w-100" type="submit">Agregar usuario</button></div>
-          </div>
-        </form>
-        <div id="user-loading" class="text-center my-4" style="display:none">
-          <span class="text-blue-600">Cargando usuarios...</span>
-        </div>
-        <div id="user-error" class="text-center my-4 text-red-600" style="display:none"></div>
-        <table class="table table-bordered table-hover" id="user-table">
-          <thead><tr><th>ID</th><th>Nombre</th><th>Email</th><th>Acciones</th></tr></thead>
-          <tbody id="user-tbody"></tbody>
-        </table>
-        <script>
-          // --- TAREAS ---
-          const taskForm = document.getElementById('task-form');
-          const taskInput = document.getElementById('task-input');
-          const taskTbody = document.getElementById('task-tbody');
-          let tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
-
-          function renderTasks() {
-            taskTbody.innerHTML = '';
-            tasks.forEach((task, i) => {
-              const tr = document.createElement('tr');
-              tr.innerHTML = `<td>${i + 1}</td><td>${task.title}</td><td><input type='checkbox' ${task.completed ? 'checked' : ''} onchange='toggleTask(${i})'></td><td><button class='btn btn-sm btn-danger' onclick='deleteTask(${i})'>Eliminar</button></td>`;
-              taskTbody.appendChild(tr);
-            });
-            document.getElementById('dashboard-tasks-count').textContent = tasks.length;
-          }
-          function saveTasks() {
-            localStorage.setItem('tasks', JSON.stringify(tasks));
-          }
-          taskForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const value = taskInput.value.trim();
-            if (!value) return;
-            tasks.push({ title: value, completed: false });
-            saveTasks();
-            renderTasks();
-            taskInput.value = '';
-          });
-          window.deleteTask = function(i) {
-            tasks.splice(i, 1);
-            saveTasks();
-            renderTasks();
-          }
-          window.toggleTask = function(i) {
-            tasks[i].completed = !tasks[i].completed;
-            saveTasks();
-            renderTasks();
-          }
-          renderTasks();
-
-          // --- USUARIOS ---
-          const userForm = document.getElementById('user-form');
-          const userName = document.getElementById('user-name');
-          const userEmail = document.getElementById('user-email');
-          const userTbody = document.getElementById('user-tbody');
-          let users = JSON.parse(localStorage.getItem('users') || '[]');
-
-          function renderUsers() {
-            userTbody.innerHTML = '';
-            users.forEach((user, i) => {
-              const tr = document.createElement('tr');
-              tr.innerHTML = `<td>${i + 1}</td><td>${user.name}</td><td>${user.email}</td><td><button class='btn btn-sm btn-danger' onclick='deleteUser(${i})'>Eliminar</button></td>`;
-              userTbody.appendChild(tr);
-            });
-            document.getElementById('dashboard-users-count').textContent = users.length;
-          }
-          function saveUsers() {
-            localStorage.setItem('users', JSON.stringify(users));
-          }
-          userForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const name = userName.value.trim();
-            const email = userEmail.value.trim();
-            if (!name || !email) return;
-            users.push({ name, email });
-            saveUsers();
-            renderUsers();
-            userName.value = '';
-            userEmail.value = '';
-          });
-          window.deleteUser = function(i) {
-            users.splice(i, 1);
-            saveUsers();
-            renderUsers();
-          }
-          renderUsers();
-
-          // --- DASHBOARD ---
-          function updateDashboard() {
-            const dash = document.getElementById('dashboard');
-            if (!dash) return;
-            dash.querySelector('.card-title').textContent = `Tareas (${tasks.length})`;
-            dash.querySelectorAll('.card-title')[1].textContent = `Usuarios (${users.length})`;
-          }
-          // Actualizar dashboard al cambiar tareas/usuarios
-          function updateAll() {
-            renderTasks();
-            renderUsers();
-            updateDashboard();
-          }
-          // Llamar updateDashboard después de render inicial
-          updateDashboard();
-          // Actualizar dashboard cada vez que se cambia de tab
-          document.querySelectorAll('a[data-bs-toggle="tab"]').forEach(tab => {
-            tab.addEventListener('shown.bs.tab', updateDashboard);
-          });
-        </script>
-      </div>
       <div class="tab-pane fade" id="dashboard">
         <h1 class="mb-4 text-center">Dashboard</h1>
         <div class="row">

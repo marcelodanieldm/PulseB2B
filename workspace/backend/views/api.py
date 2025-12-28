@@ -1,10 +1,51 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, session
 from controllers.user_controller import UserController
 from controllers.task_controller import TaskController
+from controllers.notification_controller import NotificationController
+from models.auth import authenticate
 
 api = Blueprint('api', __name__)
 user_controller = UserController()
 task_controller = TaskController()
+notification_controller = NotificationController()
+@api.route('/notifications', methods=['POST'])
+def send_notification():
+    data = request.get_json()
+    message = data.get('message', '').strip()
+    user_type = data.get('user_type', 'all')
+    if not message:
+        return jsonify({'error': 'El mensaje no puede estar vacío.'}), 400
+    notif = notification_controller.add_notification(message, user_type)
+    return jsonify(notif.to_dict()), 201
+
+@api.route('/notifications', methods=['GET'])
+def get_notifications():
+    user_type = request.args.get('user_type', 'all')
+    notifs = notification_controller.get_notifications(user_type)
+    return jsonify([n.to_dict() for n in notifs])
+
+@api.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    username = data.get('username', '')
+    password = data.get('password', '')
+    user = authenticate(username, password)
+    if user:
+        session['user'] = user
+        return jsonify({"success": True, "role": user["role"], "username": user["username"]})
+    return jsonify({"success": False, "error": "Credenciales inválidas"}), 401
+
+@api.route('/logout', methods=['POST'])
+def logout():
+    session.pop('user', None)
+    return jsonify({"success": True})
+
+@api.route('/me', methods=['GET'])
+def me():
+    user = session.get('user')
+    if user:
+        return jsonify(user)
+    return jsonify({"error": "No autenticado"}), 401
 
 @api.route('/users', methods=['GET'])
 def get_users():

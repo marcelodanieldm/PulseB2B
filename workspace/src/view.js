@@ -47,7 +47,30 @@ const View = (() => {
     });
   }
 
-  return { renderTasks, renderUsers, setTaskLoading, setTaskError, setUserLoading, setUserError };
+  function renderUserPanel(user, tasks, notifications = []) {
+    const panel = document.getElementById('user-panel');
+    panel.innerHTML = '';
+    // Notificaciones
+    if (notifications.length > 0) {
+      const notifDiv = document.createElement('div');
+      notifDiv.className = 'mb-4 p-2 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700';
+      notifDiv.innerHTML = notifications.map(n => `<div>${n}</div>`).join('');
+      panel.appendChild(notifDiv);
+    }
+    // ...rest of user panel rendering (tasks, etc)...
+  }
+
+  function showPanelNotification(type, message) {
+    // type: 'free' | 'pro'
+    const panel = document.getElementById('user-panel');
+    let notif = document.createElement('div');
+    notif.className = `${type}-panel-notification mb-2 p-2 bg-blue-100 border-l-4 border-blue-500 text-blue-700`;
+    notif.textContent = message;
+    panel.prepend(notif);
+    setTimeout(() => notif.remove(), 8000);
+  }
+
+  return { renderTasks, renderUsers, setTaskLoading, setTaskError, setUserLoading, setUserError, renderUserPanel, showPanelNotification };
 })();
 
 export default View;
