@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Enterprise API Documentation</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="max-w-4xl mx-auto py-12">
+        <h1 class="text-4xl font-bold text-blue-700 mb-4">Enterprise API Documentation</h1>
+        <p class="mb-8 text-lg text-gray-700">Welcome, {{ user.username }}! You have full access to the API documentation as an <span class="font-semibold">Enterprise</span> user.</p>
+        <div class="bg-white shadow rounded-lg p-8">
+            <h2 class="text-2xl font-semibold mb-4">API Endpoints</h2>
+            <ul class="list-disc ml-8 text-gray-800">
+                <li><span class="font-mono">POST /api/login</span> - Authenticate user</li>
+                <li><span class="font-mono">GET /api/users</span> - List users</li>
+                <li><span class="font-mono">POST /api/tasks</span> - Create task</li>
+                <li><span class="font-mono">GET /api/tasks</span> - List tasks</li>
+                <li><span class="font-mono">POST /api/notifications</span> - Send notification</li>
+                <!-- Add more endpoints as needed -->
+            </ul>
+            <div class="mt-8">
+                <a href="/" class="text-blue-600 hover:underline">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
