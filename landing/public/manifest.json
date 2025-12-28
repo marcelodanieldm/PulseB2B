@@ -1,0 +1,9 @@
+{
+  "name": "PulseB2B Landing Page",
+  "short_name": "PulseB2B",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "description": "Predictive Intelligence for Tech Growth in LATAM."
+}

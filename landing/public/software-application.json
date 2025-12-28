@@ -1,0 +1,14 @@
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "PulseB2B",
+  "operatingSystem": "All",
+  "applicationCategory": "BusinessApplication",
+  "description": "Predictive Intelligence for Tech Growth. Stop cold-calling the wrong people. We track funding signals and tech shifts to tell you who is hiring in LATAM before they even post a job.",
+  "offers": {
+    "@type": "Offer",
+    "price": "29.00",
+    "priceCurrency": "USD"
+  },
+  "url": "https://pulseb2b.com"
+}
