@@ -1,49 +1,55 @@
-
-# PulseB2B Frontend (Vue.js + Bootstrap)
+# PulseB2B Frontend (Vue.js + Bootstrap) + Backend (Python Flask)
 
 ## Descripción
-Este frontend ha sido migrado completamente a Vue.js (sin React), usando Vite para un desarrollo rápido y Bootstrap para una interfaz limpia, minimalista y elegante. La estructura sigue el patrón Modelo Vista Controlador (MVC) para facilitar el mantenimiento y la escalabilidad.
+Este proyecto ahora cuenta con un backend en Python (Flask) y un frontend en Vue.js (Vite + Bootstrap). La lógica de negocio de usuarios y tareas ha sido migrada a Python, exponiendo endpoints REST para consumo del frontend.
 
 ## Estructura del Proyecto
 
-- `src/App.vue`: Vista principal. Implementa la gestión de tareas con Bootstrap y enlaza con el controlador.
-- `src/controllers/TaskController.js`: Controlador de lógica de negocio para tareas (fetch, agregar, eliminar, alternar completado).
+- `src/App.vue`: Vista principal. Implementa la gestión de tareas con Bootstrap y enlaza con el backend.
+- `src/controllers/TaskController.js` y `src/controllers/UserController.js`: Controladores legacy (pueden eliminarse tras migración total a Python).
 - `src/main.js`: Punto de entrada de la app Vue.
-- `src/style.css`: Estilos personalizados mínimos (Bootstrap es la base visual).
+- `backend/app.py`: Servidor Flask con endpoints `/api/users` y `/api/tasks`.
+- `backend/user_controller.py` y `backend/task_controller.py`: Lógica de negocio en Python.
 - `index.html`: Incluye Bootstrap y monta la app Vue.
 
 ## Instalación y Uso
 
+### Frontend
 1. Instala dependencias:
-	```sh
-	npm install
-	```
+    ```sh
+    npm install
+    ```
 2. Ejecuta en modo desarrollo:
-	```sh
-	npm run dev
-	```
+    ```sh
+    npm run dev
+    ```
 3. Compila para producción:
-	```sh
-	npm run build
-	```
+    ```sh
+    npm run build
+    ```
 
-## Patrón MVC
-- **Modelo**: Los datos de tareas se gestionan en el controlador (`TaskController.js`) usando `ref` de Vue.
-- **Vista**: `App.vue` muestra la UI y responde a eventos del usuario.
-- **Controlador**: `TaskController.js` expone métodos para manipular el modelo y es consumido por la vista.
+### Backend (Python)
+1. Instala dependencias:
+    ```sh
+    pip install flask requests
+    ```
+2. Ejecuta el servidor:
+    ```sh
+    python backend/app.py
+    ```
 
-## Integración Backend
-- El controlador simula integración con backend usando fetch a una API pública.
-- Puedes reemplazar la URL en `TaskController.js` para conectar con tu backend real.
+## API REST
+- `GET /api/users`: Lista usuarios.
+- `GET /api/tasks`: Lista tareas.
+- `POST /api/tasks`: Agrega tarea.
+- `POST /api/tasks/<id>/toggle`: Alterna completado.
+- `DELETE /api/tasks/<id>`: Elimina tarea.
 
-## Personalización
-- Agrega nuevas vistas en `src/components/` y nuevos controladores en `src/controllers/`.
-- Usa clases de Bootstrap para mantener la coherencia visual.
-
-## Limpieza
-- Todo el código y vistas innecesarias han sido eliminados.
-- El proyecto está listo para escalar o personalizar según tus necesidades.
+## Migración y Personalización
+- La lógica de negocio ahora reside en Python. Puedes extender los controladores en `backend/`.
+- El frontend puede consumir los endpoints REST usando fetch/Axios.
+- Elimina los controladores JS si ya no los necesitas.
 
 ---
 
-¿Dudas o necesitas ejemplos de nuevas vistas/controladores? ¡Pide ayuda aquí!
+¿Dudas o necesitas ejemplos de nuevas vistas/controladores en Python? ¡Pide ayuda aquí!
