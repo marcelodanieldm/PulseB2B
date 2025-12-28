@@ -1,12 +1,25 @@
-import Head from 'next/head';
-import Hero from '../components/Hero';
-import Features from '../components/Features';
-import Comparison from '../components/Comparison';
-import Services from '../components/Services';
-import Audience from '../components/Audience';
-import Navbar from '../components/Navbar';
+
+import { useEffect, useState } from 'react';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
 
 export default function Home() {
+  const [role, setRole] = useState(null);
+
+  useEffect(() => {
+    const getUserRole = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user && user.user_metadata && user.user_metadata.role) {
+        setRole(user.user_metadata.role);
+      }
+    };
+    getUserRole();
+  }, []);
+
   return (
     <>
       <Head>
@@ -16,6 +29,11 @@ export default function Home() {
       </Head>
       <div className="bg-zinc-950 min-h-screen font-geist text-white">
         <Navbar />
+        {role && (
+          <div className="fixed top-4 right-4 bg-indigo-500/90 text-white px-4 py-2 rounded-full text-xs font-semibold z-50 shadow-lg">
+            Rol: {role}
+          </div>
+        )}
         <main>
           <Hero />
           <Features />
