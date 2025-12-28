@@ -1,3 +1,19 @@
+## Testing de roles de usuario
+
+Hay tests unitarios en `__tests__/authRoles.test.js` para validar el flujo de sign in y el rol de cada usuario (superuser, free, pro) usando Jest.
+
+### Ejecutar tests
+
+1. Asegúrate de tener las variables reales de Supabase en `.env`.
+2. Instala dependencias de test:
+	```
+	npm install --save-dev jest dotenv
+	```
+3. Ejecuta:
+	```
+	npx jest __tests__/authRoles.test.js
+	```
+4. El test validará que cada usuario accede y tiene el rol correcto.
 # PulseB2B Landing Page
 
 This folder contains the new high-conversion, minimalist, and premium landing page for PulseB2B, inspired by the "Stealth Hunter" concept.
