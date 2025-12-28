@@ -10,6 +10,7 @@ from views.webhook import webhook
 
 from views.docs import docs
 from views.notifications_api import notifications_api
+from views.user_stats_api import user_stats_api
 
 
 app = Flask(__name__)
@@ -20,6 +21,7 @@ app.register_blueprint(subscription)
 app.register_blueprint(webhook)
 app.register_blueprint(docs)
 app.register_blueprint(notifications_api)
+app.register_blueprint(user_stats_api)
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -45,13 +45,21 @@ const usersByService = ref({})
 const usersByCountry = ref({})
 
 async function fetchStats() {
-  // Reemplaza por fetch real a tu backend
-  // Mock ejemplo:
-  freeCount.value = 42
-  proCount.value = 18
-  enterpriseCount.value = 4
-  usersByService.value = { 'Webhooks': 20, 'Slack': 10, 'HubSpot': 8, 'API': 16 }
-  usersByCountry.value = { 'AR': 22, 'MX': 18, 'CO': 10, 'ES': 8, 'US': 6 }
+  try {
+    const res = await fetch('/api/admin/user-stats')
+    const data = await res.json()
+    freeCount.value = data.freeCount
+    proCount.value = data.proCount
+    enterpriseCount.value = data.enterpriseCount
+    usersByService.value = data.usersByService
+    usersByCountry.value = data.usersByCountry
+  } catch (e) {
+    freeCount.value = 0
+    proCount.value = 0
+    enterpriseCount.value = 0
+    usersByService.value = {}
+    usersByCountry.value = {}
+  }
 }
 
 onMounted(fetchStats)
