@@ -6,6 +6,7 @@ import Dashboard from './components/Dashboard.vue';
 
 import Settings from './components/Settings.vue';
 import SuperuserNotifications from './components/SuperuserNotifications.vue';
+import UserStats from './components/UserStats.vue';
 
 const routes = [
   { path: '/', name: 'Tareas', component: TaskView },
@@ -24,6 +25,7 @@ const routes = [
   { path: '/dashboard', name: 'Dashboard', component: Dashboard },
   { path: '/configuracion', name: 'Configuración', component: Settings },
   { path: '/admin/notificaciones', name: 'Notificaciones', component: SuperuserNotifications },
+  { path: '/admin/usuarios', name: 'Usuarios', component: UserStats },
 ];
 
 const router = createRouter({
