@@ -19,4 +19,27 @@
   </div>
 </template>
 <script setup>
+import { onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+
+const route = useRoute()
+const router = useRouter()
+
+onMounted(() => {
+  // Detect ?status=unlocked and show confetti + toast
+  if (route.query.status === 'unlocked') {
+    // Confetti effect (simple)
+    import('canvas-confetti').then(confetti => {
+      confetti.default({
+        particleCount: 120,
+        spread: 90,
+        origin: { y: 0.7 }
+      })
+    })
+    // Toast
+    alert('🎉 Welcome to Enterprise. Your API Documentation and Webhooks are now live.')
+    // Optionally, remove the query param
+    router.replace({ query: { ...route.query, status: undefined } })
+  }
+})
 </script>
