@@ -1,4 +1,4 @@
-    <!-- Exclusive Access User Dashboard (SPA Section) -->
+<!-- Exclusive Access User Dashboard (SPA Section) -->
     <section id="exclusive-dashboard" class="max-w-3xl mx-auto mt-24 px-4 hidden">
       <h2 class="text-2xl font-bold text-zinc-100 mb-8">Mi Panel de Servicios</h2>
       <div id="user-services-list" class="space-y-6">
@@ -117,6 +117,10 @@
           <input id="task-input" type="text" class="flex-1 rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Nueva tarea" />
           <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition" type="submit">Agregar</button>
         </form>
+        <div id="task-loading" class="text-center my-4" style="display:none">
+          <span class="text-blue-600">Cargando tareas...</span>
+        </div>
+        <div id="task-error" class="text-center my-4 text-red-600" style="display:none"></div>
         <div class="overflow-x-auto rounded shadow">
           <table class="min-w-full text-sm text-left bg-white" id="task-table">
             <thead class="bg-gray-100">
@@ -138,6 +142,10 @@
           <input id="user-email" type="email" class="flex-1 rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Email" />
           <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition" type="submit">Agregar usuario</button>
         </form>
+        <div id="user-loading" class="text-center my-4" style="display:none">
+          <span class="text-blue-600">Cargando usuarios...</span>
+        </div>
+        <div id="user-error" class="text-center my-4 text-red-600" style="display:none"></div>
         <div class="overflow-x-auto rounded shadow">
           <table class="min-w-full text-sm text-left bg-white" id="user-table">
             <thead class="bg-gray-100">
@@ -1247,12 +1255,13 @@
     }
     renderUsers();
   </script>
+    <script type="module" src="src/controller.js"></script>
 </body>
             <script>
               // --- SPA Navigation ---
               const sections = {
                 '#radar': document.getElementById('radar-archive'),
-                '#dashboard': document.getElementById('pro-dashboard'),
+                               '#dashboard': document.getElementById('pro-dashboard'),
                 '#settings-api': document.getElementById('api-console'),
               };
               function showSection(hash) {
@@ -1747,6 +1756,10 @@
             <button class="btn btn-success" type="submit">Agregar</button>
           </div>
         </form>
+        <div id="task-loading" class="text-center my-4" style="display:none">
+          <span class="text-blue-600">Cargando tareas...</span>
+        </div>
+        <div id="task-error" class="text-center my-4 text-red-600" style="display:none"></div>
         <table class="table table-striped table-hover" id="task-table">
           <thead><tr><th>#</th><th>Tarea</th><th>Completada</th><th>Acciones</th></tr></thead>
           <tbody id="task-tbody"></tbody>
@@ -1761,6 +1774,10 @@
             <div class="col-md-4"><button class="btn btn-primary w-100" type="submit">Agregar usuario</button></div>
           </div>
         </form>
+        <div id="user-loading" class="text-center my-4" style="display:none">
+          <span class="text-blue-600">Cargando usuarios...</span>
+        </div>
+        <div id="user-error" class="text-center my-4 text-red-600" style="display:none"></div>
         <table class="table table-bordered table-hover" id="user-table">
           <thead><tr><th>ID</th><th>Nombre</th><th>Email</th><th>Acciones</th></tr></thead>
           <tbody id="user-tbody"></tbody>
@@ -1779,6 +1796,7 @@
               tr.innerHTML = `<td>${i + 1}</td><td>${task.title}</td><td><input type='checkbox' ${task.completed ? 'checked' : ''} onchange='toggleTask(${i})'></td><td><button class='btn btn-sm btn-danger' onclick='deleteTask(${i})'>Eliminar</button></td>`;
               taskTbody.appendChild(tr);
             });
+            document.getElementById('dashboard-tasks-count').textContent = tasks.length;
           }
           function saveTasks() {
             localStorage.setItem('tasks', JSON.stringify(tasks));
@@ -1818,6 +1836,7 @@
               tr.innerHTML = `<td>${i + 1}</td><td>${user.name}</td><td>${user.email}</td><td><button class='btn btn-sm btn-danger' onclick='deleteUser(${i})'>Eliminar</button></td>`;
               userTbody.appendChild(tr);
             });
+            document.getElementById('dashboard-users-count').textContent = users.length;
           }
           function saveUsers() {
             localStorage.setItem('users', JSON.stringify(users));
@@ -2015,6 +2034,4 @@
       }
     </script>
 </body>
-</html>
-  </body>
 </html>
