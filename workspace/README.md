@@ -1,32 +1,19 @@
-# PulseB2B Frontend (Vue.js + Bootstrap) + Backend (Python Flask)
+# PulseB2B Frontend (HTML + Tailwind CSS) + Backend (Python Flask)
 
 ## Descripción
-Este proyecto ahora cuenta con un backend en Python (Flask) y un frontend en Vue.js (Vite + Bootstrap). La lógica de negocio de usuarios y tareas ha sido migrada a Python, exponiendo endpoints REST para consumo del frontend.
+Este proyecto ahora cuenta con un backend en Python (Flask) y un frontend moderno basado únicamente en HTML y Tailwind CSS. Toda la lógica de negocio de usuarios y tareas reside en el backend Python, y el frontend es una SPA ligera sin frameworks JS.
 
 ## Estructura del Proyecto
 
-- `src/App.vue`: Vista principal. Implementa la gestión de tareas con Bootstrap y enlaza con el backend.
-- `src/controllers/TaskController.js` y `src/controllers/UserController.js`: Controladores legacy (pueden eliminarse tras migración total a Python).
-- `src/main.js`: Punto de entrada de la app Vue.
+- `index.html`: Vista principal, navegación y lógica de la app con Tailwind CSS y JavaScript vanilla.
+- `src/style.css`: (opcional) Estilos personalizados mínimos.
 - `backend/app.py`: Servidor Flask con endpoints `/api/users` y `/api/tasks`.
 - `backend/user_controller.py` y `backend/task_controller.py`: Lógica de negocio en Python.
-- `index.html`: Incluye Bootstrap y monta la app Vue.
 
 ## Instalación y Uso
 
 ### Frontend
-1. Instala dependencias:
-    ```sh
-    npm install
-    ```
-2. Ejecuta en modo desarrollo:
-    ```sh
-    npm run dev
-    ```
-3. Compila para producción:
-    ```sh
-    npm run build
-    ```
+1. Abre `index.html` directamente en tu navegador. No requiere build ni dependencias.
 
 ### Backend (Python)
 1. Instala dependencias:
@@ -46,9 +33,9 @@ Este proyecto ahora cuenta con un backend en Python (Flask) y un frontend en Vue
 - `DELETE /api/tasks/<id>`: Elimina tarea.
 
 ## Migración y Personalización
-- La lógica de negocio ahora reside en Python. Puedes extender los controladores en `backend/`.
-- El frontend puede consumir los endpoints REST usando fetch/Axios.
-- Elimina los controladores JS si ya no los necesitas.
+- El frontend es HTML + Tailwind CSS, sin dependencias de Vue ni Bootstrap.
+- El backend es Python Flask, puedes extender los controladores en `backend/`.
+- Elimina cualquier referencia a controladores JS o archivos Vue.
 
 ---
 
