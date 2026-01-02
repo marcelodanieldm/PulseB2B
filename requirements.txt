@@ -3,29 +3,29 @@
 # Web scraping y RSS
 pygooglenews
 feedparser
-dateparser==0.7.6
-newspaper4k==0.9.4.1
-requests==2.31.0
-beautifulsoup4==4.12.3
+dateparser>=0.7.6
+newspaper4k>=0.9.4
+requests>=2.31.0
+beautifulsoup4>=4.12.0
 lxml
 
 # NLP y Machine Learning
-transformers==4.36.2
-torch==2.1.2
-sentencepiece==0.1.99
-tokenizers==0.15.0
+transformers>=4.36.0
+torch>=2.1.0
+sentencepiece>=0.1.99
+tokenizers>=0.15.0
 
 # Data processing
-numpy==1.26.3
-pandas==2.1.4
-python-dateutil==2.8.2
+numpy>=1.26.0
+pandas>=2.1.0
+python-dateutil>=2.8.2
 
 # Configuration
-PyYAML==6.0.1
+PyYAML>=6.0.0
 
 # Logging and utilities
-python-dotenv==1.0.0
-tqdm==4.66.1
+python-dotenv>=1.0.0
+tqdm>=4.66.0
 supabase
 
 # Optional: Enhanced NER (Named Entity Recognition)
