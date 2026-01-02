@@ -1,7 +1,6 @@
 # PulseB2B Dependencies
 
 # Web scraping y RSS
-pygooglenews
 feedparser>=6.0.0
 dateparser>=0.7.6
 newspaper4k>=0.9.4
