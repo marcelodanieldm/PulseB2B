@@ -86,40 +86,7 @@ jobs:
         if: always()
         run: |
           echo "📊 Generating lead summary..."
-          python -c "
-import json
-import os
-from datetime import datetime
-
-try:
-    with open('data/output/high_value_leads.json', 'r') as f:
-        leads = json.load(f)
-    
-    report = f'''# High-Value Lead Report
-Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-
-## Summary
-- Total Leads: {len(leads)}
-- Threshold: {os.getenv('SCORE_THRESHOLD', '250')} points
-
-## Top Leads
-'''
-    
-    for i, lead in enumerate(leads[:10], 1):
-        report += f\"\"\"{i}. **{lead.get('company_name', 'Unknown')}**
-   - Score: {lead.get('priority_score', 0)} points
-   - Size: {lead.get('company_size', 'N/A')} employees
-   - Industry: {lead.get('industry', 'N/A')}
-
-\"\"\"
-    
-    with open('data/output/lead_report.md', 'w') as f:
-        f.write(report)
-    
-    print('✅ Report generated')
-except Exception as e:
-    print(f'⚠️  Error generating report: {e}')
-          "
+          python scripts/github_actions_helpers.py generate_lead_report
       
       - name: 📤 Upload Reports
         if: always()

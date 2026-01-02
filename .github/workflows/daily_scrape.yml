@@ -39,18 +39,18 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-        - name: 📦 Install Backend Node.js Dependencies
-          run: |
-            npm ci
-            echo "✅ Backend Node.js dependencies installed"
-          working-directory: backend
+      
+      - name: 📦 Install Backend Node.js Dependencies
+        run: |
+          npm ci
+          echo "✅ Backend Node.js dependencies installed"
+        working-directory: backend
 
-        - name: 📦 Install Frontend Node.js Dependencies
-          run: |
-            npm ci
-            echo "✅ Frontend Node.js dependencies installed"
-          working-directory: frontend
-            echo "✅ Node.js dependencies installed"
+      - name: 📦 Install Frontend Node.js Dependencies
+        run: |
+          npm ci
+          echo "✅ Frontend Node.js dependencies installed"
+        working-directory: frontend
       
       # ============================================
       # 2. INTELLIGENT SCRAPING (Google CSE Hack)
