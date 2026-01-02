@@ -5,6 +5,10 @@ __pycache__/
 *.so
 .Python
 
+# Node modules
+node_modules/
+package-lock.json
+
 # Virtual environments
 venv/
 env/

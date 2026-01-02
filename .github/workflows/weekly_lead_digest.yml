@@ -40,6 +40,9 @@ jobs:
         working-directory: frontend
         run: npm ci
       
+      - name: Install root dependencies
+        run: npm install
+      
       - name: Send Telegram digest
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}

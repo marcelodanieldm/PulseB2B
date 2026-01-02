@@ -30,10 +30,13 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
       
-      - name: 📦 Install dependencies
+      - name: 📦 Install Python dependencies
         run: |
           pip install --upgrade pip
           pip install pandas numpy python-telegram-bot
+      
+      - name: 📦 Install Node.js dependencies
+        run: npm install
       
       - name: 📊 Generate Weekly Statistics
         id: stats

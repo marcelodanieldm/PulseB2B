@@ -31,9 +31,12 @@ jobs:
           cache: 'npm'
           cache-dependency-path: 'backend/package.json'
       
-      - name: 📥 Install dependencies
+      - name: 📥 Install backend dependencies
         working-directory: backend
         run: npm ci
+      
+      - name: 📦 Install root dependencies (for telegram service)
+        run: npm install
       
       - name: 🎯 Check for High-Value Leads
         id: check_leads
