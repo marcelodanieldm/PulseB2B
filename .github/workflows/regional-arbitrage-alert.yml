@@ -18,7 +18,9 @@ env:
 jobs:
   regional-arbitrage-alerts:
     name: 🌎 Regional Expansion Detection & Alert
-    runs-on: ubuntu-latest    timeout-minutes: 25    
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    
     steps:
       - name: 📥 Checkout repository
         uses: actions/checkout@v4
