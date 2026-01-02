@@ -8,6 +8,7 @@ on:
 jobs:
   send-daily-signal:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -15,6 +16,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          cache: 'pip'
       - name: Install dependencies
         run: pip install requests
       - name: Send Daily Signal

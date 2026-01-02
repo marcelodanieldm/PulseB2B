@@ -19,6 +19,7 @@ jobs:
   weekly-digest:
     name: 📅 Weekly Opportunities Digest
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     
     steps:
       - name: 📥 Checkout repository

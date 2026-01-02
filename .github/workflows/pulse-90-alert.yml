@@ -19,6 +19,7 @@ jobs:
   pulse-critical-alerts:
     name: 🔥 Pulse Score 90+ Detection & Alert
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     
     steps:
       - name: 📥 Checkout repository
