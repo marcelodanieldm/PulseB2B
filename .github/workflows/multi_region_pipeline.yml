@@ -251,6 +251,7 @@ jobs:
     needs: [merge-and-process]
     if: failure()
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     
     steps:
       - name: 🚨 Send Failure Notification

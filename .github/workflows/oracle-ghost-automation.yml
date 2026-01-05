@@ -189,6 +189,7 @@ jobs:
   cleanup:
     name: 🧹 Cleanup old data
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: oracle-detector
     if: success()
     

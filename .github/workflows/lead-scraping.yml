@@ -127,6 +127,7 @@ jobs:
   post-process:
     needs: scrape-and-process-leads
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     if: success()
     
     steps:
