@@ -21,6 +21,7 @@ jobs:
   sec-funding-scraper:
     name: SEC Form D Scraper
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     if: github.event.inputs.target == 'all' || github.event.inputs.target == 'sec' || github.event_name == 'schedule'
     
     steps:
@@ -62,6 +63,7 @@ jobs:
   linkedin-jobs-scraper:
     name: LinkedIn Jobs Scraper (LATAM)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     if: github.event.inputs.target == 'all' || github.event.inputs.target == 'linkedin' || github.event_name == 'schedule'
     
     steps:
@@ -100,6 +102,7 @@ jobs:
   osint-lead-scoring:
     name: OSINT Lead Scoring Engine
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     if: github.event.inputs.target == 'all' || github.event.inputs.target == 'osint' || github.event_name == 'schedule'
     
     steps:
@@ -141,6 +144,7 @@ jobs:
   news-intelligence:
     name: News Intelligence Pipeline
     runs-on: ubuntu-latest
+    timeout-minutes: 35
     if: github.event.inputs.target == 'all' || github.event.inputs.target == 'news' || github.event_name == 'schedule'
     
     steps:
@@ -177,6 +181,7 @@ jobs:
   push-to-supabase:
     name: Consolidate & Push to Supabase
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     needs: [sec-funding-scraper, linkedin-jobs-scraper, osint-lead-scoring, news-intelligence]
     if: always()
     
@@ -209,6 +214,7 @@ jobs:
   notify:
     name: Send Pipeline Notifications
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: [push-to-supabase]
     if: always()
     
