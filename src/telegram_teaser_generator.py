@@ -30,10 +30,14 @@ from supabase import create_client, Client
 # =====================================================
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+# Support both naming conventions for backward compatibility
+SUPABASE_SERVICE_ROLE_KEY = (
+    os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or 
+    os.environ.get("SUPABASE_SERVICE_KEY")
+)
 
 if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
-    raise ValueError("Missing Supabase credentials")
+    raise ValueError("Missing Supabase credentials: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_SERVICE_KEY) required")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
