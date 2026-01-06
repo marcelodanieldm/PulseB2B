@@ -54,7 +54,7 @@ jobs:
         run: |
           echo "🎯 Checking for high-value leads..."
           node -e "
-          const { SupabaseService } = require('./dist/supabase-service.js');
+          const { SupabaseService } = require('./dist/supabase-client.js');
           const supabase = new SupabaseService();
           
           async function checkLeads() {
