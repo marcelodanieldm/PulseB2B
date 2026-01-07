@@ -36,7 +36,25 @@ SUPABASE_SERVICE_ROLE_KEY = (
     os.environ.get("SUPABASE_SERVICE_KEY")
 )
 
+# Enhanced error handling with diagnostics
 if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
+    print("\n" + "="*60)
+    print("❌ ERROR: Missing Supabase credentials")
+    print("="*60)
+    print(f"SUPABASE_URL present: {bool(SUPABASE_URL)}")
+    if SUPABASE_URL:
+        print(f"SUPABASE_URL length: {len(SUPABASE_URL)}")
+    print(f"SUPABASE_SERVICE_ROLE_KEY present: {bool(os.environ.get('SUPABASE_SERVICE_ROLE_KEY'))}")
+    print(f"SUPABASE_SERVICE_KEY present: {bool(os.environ.get('SUPABASE_SERVICE_KEY'))}")
+    print(f"\nAll SUPABASE-related env vars: {[k for k in os.environ.keys() if 'SUPABASE' in k]}")
+    print("="*60)
+    print("\nSOLUTION:")
+    print("1. Go to GitHub repository Settings → Secrets and variables → Actions")
+    print("2. Verify these secrets exist and have non-empty values:")
+    print("   - SUPABASE_URL (should be https://xxx.supabase.co)")
+    print("   - SUPABASE_SERVICE_KEY (should be a long JWT token)")
+    print("3. Re-run the workflow after confirming secrets are properly set")
+    print("="*60 + "\n")
     raise ValueError("Missing Supabase credentials: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_SERVICE_KEY) required")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)

@@ -64,6 +64,30 @@ jobs:
           echo "=====================================================";
           echo "";
           
+          # Debug: Check if env vars are set (without exposing values)
+          echo "🔍 Verificando variables de entorno...";
+          if [ -z "$SUPABASE_URL" ]; then
+            echo "❌ ERROR: SUPABASE_URL is not set or empty";
+          else
+            echo "✅ SUPABASE_URL is set (length: ${#SUPABASE_URL})";
+          fi
+          
+          if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "⚠️  WARNING: SUPABASE_SERVICE_ROLE_KEY is not set or empty";
+          else
+            echo "✅ SUPABASE_SERVICE_ROLE_KEY is set (length: ${#SUPABASE_SERVICE_ROLE_KEY})";
+          fi
+          
+          if [ -z "$SUPABASE_SERVICE_KEY" ]; then
+            echo "⚠️  WARNING: SUPABASE_SERVICE_KEY is not set or empty";
+          else
+            echo "✅ SUPABASE_SERVICE_KEY is set (length: ${#SUPABASE_SERVICE_KEY})";
+          fi
+          
+          echo "";
+          echo "🚀 Ejecutando script...";
+          echo "";
+          
           python src/telegram_teaser_generator.py
 
       # =====================================================
