@@ -251,6 +251,26 @@ def calculate_arbitrage_score(
 # MAIN TEASER GENERATOR
 # =====================================================
 
+def generate_fallback_teaser() -> str:
+    """
+    Generate a fallback teaser when no candidates are available.
+    
+    Returns:
+        A friendly message for when no data is available
+    """
+    fallback_messages = [
+        "🏢 No new high-growth companies today\n💰 Our AI is analyzing fresh opportunities\n🔥 Check back tomorrow for hot leads!",
+        "🏢 Taking a data refresh break\n💰 New opportunities loading soon\n🔥 Tomorrow's picks will be 🔥",
+        "🏢 Quality over quantity today\n💰 Curating tomorrow's best prospects\n🔥 Stay tuned for premium leads!"
+    ]
+    
+    # Rotate based on day of year to add variety
+    day_of_year = datetime.utcnow().timetuple().tm_yday
+    selected_message = fallback_messages[day_of_year % len(fallback_messages)]
+    
+    return selected_message
+
+
 def generate_tg_teaser(company_data: Dict) -> str:
     """
     Generate a 3-line Telegram teaser from company data.
@@ -319,27 +339,54 @@ def select_company_of_the_day() -> Optional[Dict]:
     1. Highest Hiring Probability
     2. Highest Arbitrage Score (US/Canada with LATAM potential)
     
+    Tries multiple time windows if no recent data:
+    - Last 24 hours (preferred)
+    - Last 7 days (fallback 1)
+    - Last 30 days (fallback 2)
+    
     Returns company data dict or None if no candidates found.
     """
-    print("[Company of the Day] Fetching candidates from last 24 hours...")
+    # Try multiple time windows
+    time_windows = [
+        (24, "24 hours"),
+        (168, "7 days"),  # 24 * 7
+        (720, "30 days")  # 24 * 30
+    ]
     
-    # Query signals from last 24 hours
-    yesterday = (datetime.utcnow() - timedelta(hours=24)).isoformat()
+    candidates = None
+    selected_window = None
     
-    response = supabase.table('signals') \
-        .select('*') \
-        .gte('created_at', yesterday) \
-        .gte('desperation_score', 70) \
-        .order('desperation_score', desc=True) \
-        .limit(50) \
-        .execute()
+    for hours, label in time_windows:
+        print(f"[Company of the Day] Fetching candidates from last {label}...")
+        
+        # Query signals from specified time window
+        time_threshold = (datetime.utcnow() - timedelta(hours=hours)).isoformat()
+        
+        response = supabase.table('signals') \
+            .select('*') \
+            .gte('created_at', time_threshold) \
+            .gte('desperation_score', 70) \
+            .order('desperation_score', desc=True) \
+            .limit(50) \
+            .execute()
+        
+        if response.data and len(response.data) > 0:
+            candidates = response.data
+            selected_window = label
+            print(f"[Company of the Day] Found {len(candidates)} candidates in last {label}")
+            break
+        else:
+            print(f"[Company of the Day] No candidates in last {label}, trying wider window...")
     
-    if not response.data or len(response.data) == 0:
-        print("[Company of the Day] No candidates found in last 24 hours")
+    if not candidates:
+        print("[Company of the Day] ⚠️ No candidates found even in 30-day window")
+        print("[Company of the Day] This may indicate:")
+        print("  1. Database is empty or not being populated")
+        print("  2. No companies meet minimum desperation_score >= 70")
+        print("  3. Data pipeline is not running")
         return None
     
-    candidates = response.data
-    print(f"[Company of the Day] Found {len(candidates)} candidates")
+    print(f"[Company of the Day] Using data from: {selected_window}")
     
     # Calculate composite score for each candidate
     scored_candidates = []
@@ -388,11 +435,17 @@ def select_company_of_the_day() -> Optional[Dict]:
 # DATABASE OPERATIONS
 # =====================================================
 
-def save_daily_teaser(signal_id: str, teaser_text: str) -> bool:
+def save_daily_teaser(signal_id: Optional[str], teaser_text: str) -> bool:
     """
     Save the generated teaser to the signals table.
     Updates the daily_teaser column.
+    
+    If signal_id is None (fallback teaser), skips database save.
     """
+    if signal_id is None:
+        print("[Save Teaser] Fallback teaser - skipping database save")
+        return True  # Consider success for fallback
+    
     try:
         response = supabase.table('signals') \
             .update({'daily_teaser': teaser_text}) \
@@ -445,6 +498,8 @@ def run_daily_teaser_pipeline():
     1. Select Company of the Day
     2. Generate Telegram teaser
     3. Save to database
+    
+    If no candidates found, generates a fallback message.
     """
     print("=" * 60)
     print("TELEGRAM TEASER GENERATOR - Daily Pipeline")
@@ -456,8 +511,28 @@ def run_daily_teaser_pipeline():
     company = select_company_of_the_day()
     
     if not company:
-        print("\n❌ No suitable company found. Exiting.")
-        return False
+        print("\n⚠️ No suitable company found in database.")
+        print("Generating fallback message...\n")
+        
+        # Use fallback message
+        teaser = generate_fallback_teaser()
+        
+        print("\n" + "=" * 60)
+        print("FALLBACK TEASER:")
+        print("=" * 60)
+        print(teaser)
+        print("=" * 60)
+        print()
+        
+        # Save fallback teaser (signal_id = None for fallback)
+        success = save_daily_teaser(None, teaser)
+        
+        if success:
+            print("✅ Fallback teaser saved successfully")
+            return True
+        else:
+            print("⚠️ Could not save fallback teaser, but continuing...")
+            return True  # Don't fail the workflow for fallback
     
     print()
     
