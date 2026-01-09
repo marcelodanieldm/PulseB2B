@@ -38,14 +38,21 @@ class SupabaseClient:
         
         Args:
             supabase_url: Supabase project URL (or set SUPABASE_URL env var)
-            supabase_key: Supabase anon/service key (or set SUPABASE_KEY env var)
+            supabase_key: Supabase anon/service key (or set SUPABASE_KEY/SUPABASE_SERVICE_KEY/SUPABASE_SERVICE_ROLE_KEY env var)
         """
         self.supabase_url = supabase_url or os.getenv('SUPABASE_URL')
-        self.supabase_key = supabase_key or os.getenv('SUPABASE_KEY')
+        # Support multiple naming conventions for backward compatibility
+        self.supabase_key = (
+            supabase_key or 
+            os.getenv('SUPABASE_KEY') or
+            os.getenv('SUPABASE_SERVICE_KEY') or
+            os.getenv('SUPABASE_SERVICE_ROLE_KEY')
+        )
         
         if not self.supabase_url or not self.supabase_key:
             raise ValueError(
-                "Supabase credentials not found. Set SUPABASE_URL and SUPABASE_KEY "
+                "Supabase credentials not found. Set SUPABASE_URL and one of: "
+                "SUPABASE_KEY, SUPABASE_SERVICE_KEY, or SUPABASE_SERVICE_ROLE_KEY "
                 "environment variables or pass them to the constructor."
             )
         
